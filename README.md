@@ -22,5 +22,5 @@ RomanOS is a python desktop environment.
 ## Extra stuff:
 ffmpeg is used to play audio for this program. Can be annoying to get on windows.
 These commands might work:
-winget install Gyan.FFmpeg
-pip install ffmpeg
+```winget install Gyan.FFmpeg```
+```pip install ffmpeg```
