@@ -1,0 +1,9 @@
+pygame
+comtypes
+pycaw
+opencv-python
+sounddevice
+ffmpeg
+pyaudio
+pydub
+simpleaudio
