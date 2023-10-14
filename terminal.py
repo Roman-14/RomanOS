@@ -14,7 +14,7 @@ import tictactoe
 import sys
 import sorts
 import threeDimensional
-
+import imageviewer
 wallpaper = assets.background
 wallpapers={
     "windows_grass" : assets.background,
@@ -128,25 +128,14 @@ class Terminal:
             items = os.listdir(self.directory)
             files = [item for item in items if os.path.isfile(os.path.join(self.directory, item))]
             folders = [item for item in items if os.path.isdir(os.path.join(self.directory, item))]
-            dm = []
-            dm.append("Current Directory:")
-            dm.append(self.directory)
-            dm.append("")
-            dm.append("Files:")
-            dm.append("")
-            for file in files:
-                dm.append(file)
-            if len(files)==0:
-                dm.append("None in this directory")
-
-            dm.append("")
-            dm.append("Folders:")
-            dm.append("")
-            for folder in folders:
-                dm.append(folder)
-            if len(folders)==0:
-                dm.append("None in this directory")
-            return sorted(dm)
+            fi=[*sorted(files)]
+            fo=[*sorted(folders)]
+            if len(fi)==0:
+                fi=["None in this directory"]
+            elif len(fo)==0:
+                fo=["None in this directory"]
+            dm = ["Current directory:","",self.directory,"","Files:","",*fi,"","Folders:","",*fo]
+            return dm
         except OSError as e:
             dm.append(f"Error: {e}")
 
@@ -188,7 +177,8 @@ class Terminal:
                            "text <filename> - edits supported text files",
                            "games - shows a list of commands that launch games",
                            "sorts - shows a list of sorting algorithm commands",
-                           "3d - shows some rotating 3d shape commands"
+                           "3d - shows some rotating 3d shape commands",
+                           "image <filename> - displays images."
                            ]
             
         elif self.cmd == "exit":
@@ -292,6 +282,10 @@ class Terminal:
          
             else:
                 self.response=["Error. You must be in the directory of the video","or the command must specify the location of the", "video in relation to the terminal's location."]
+        elif len(self.cmd.split())>=2 and self.cmd.split()[0]=="image":
+            if os.path.isfile(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))):
+                assets.windows.append(imageviewer.ImageViewer(os.path.join(self.directory, " ".join(self.cmd.split()[1:])),self.screen))
+                self.response=["Completed successfully."]
         elif len(self.cmd.split())==2 and self.cmd.split()[0]=="volume":
             functions.set_system_volume(int(self.cmd.split()[1]))
             self.response=["Completed successfully."]

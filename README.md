@@ -3,6 +3,7 @@
 ## What you can do on RomanOS:
 - Play audio files (and the audio from video files) on your hard drive (supports multiple file types)
 - Play video files on your hard drive
+- View image files on your hard drive
 - Navigate your directories
 - Edit and create 30 different text file types (.css, .py, .html, .js, etc...)
 - Change the wallpaper to one of the preinstalled ones (or a custom one of your own)
