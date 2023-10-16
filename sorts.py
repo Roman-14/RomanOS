@@ -172,7 +172,7 @@ class Sort:
                     temp[j + 1] = temp2
                     self.items = temp
                     self.current_iterations = {j, j + 1}  # Update the current iterations
-
+                                   
             if before == self.items:
                 self.draw(self.screen, True)
                 self.current_iterations = set()

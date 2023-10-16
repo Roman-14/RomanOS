@@ -1,5 +1,7 @@
 """
 To do:
+- auto start commands
+
 - allow the moving, creation (for txt) and deletion of files
 - add a horizontal scroll bar on text editor
 - add ctrl a, ctrl v, ctrl c and highlighting text to notepads

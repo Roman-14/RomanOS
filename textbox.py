@@ -2,6 +2,7 @@ import pygame
 import functions
 import math
 import random
+import pyperclip
 import assets
 pygame.init()
 
@@ -156,6 +157,51 @@ class textInputNotepad:
 
         return [cursorX, cursorY]
 
+    def getSelection(self):
+        if self.startpoint[1]>self.endpoint[1] or (self.startpoint[1]==self.endpoint[1] and self.startpoint[0]>self.endpoint[0]):
+            startPos = self.endpoint
+            endPos = self.startpoint
+        else:
+            startPos = self.startpoint
+            endPos = self.endpoint
+        
+        if startPos[1]==endPos[1]:
+            return self.values[startPos[1]][startPos[0]:endPos[0]]
+        else:
+            body=self.values[startPos[1]][startPos[0]:]+"\n"
+            for i in range(startPos[1]+1,endPos[1]):
+                body+=self.values[i]+"\n"
+            body+=self.values[endPos[1]][:endPos[0]]
+            return body
+        
+    def pasteText(self, value):
+        if self.selecting:
+            self.removeSelection()
+
+        beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
+        afterCursor = self.values[self.cursorpos[1]][self.cursorpos[0]:]
+
+        # Insert the pasted text at the cursor position
+        self.values[self.cursorpos[1]] = beforeCursor + value + afterCursor
+        self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+        self.text = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+
+        # Update cursor position and selection
+        self.cursorpos[0] += len(value)
+        self.endpoint = self.cursorpos
+        self.selecting = False
+
+        # Merge lines that may have been split
+        temp_values = []
+        temp_texts = []
+        for value in self.values:
+            temp_values.extend(value.split("\n"))
+        self.values = temp_values
+
+        for i in range(len(self.values)):
+            temp_texts.append(self.font.render(self.values[i], True, (0, 0, 0)))
+        self.texts = temp_texts
+
     def removeSelection(self):
         if self.startpoint[1]>self.endpoint[1] or (self.startpoint[1]==self.endpoint[1] and self.startpoint[0]>self.endpoint[0]):
             startPos = self.endpoint
@@ -192,6 +238,12 @@ class textInputNotepad:
                                 newfile.write(value+"\n")
                             newfile.close()
                             self.saved=True
+                        elif event.key == pygame.K_c and event.mod & pygame.KMOD_CTRL:
+                            pyperclip.copy(self.getSelection())
+                        elif event.key == pygame.K_v and event.mod & pygame.KMOD_CTRL:
+                            clipboard_content = pyperclip.paste()
+                            self.pasteText(clipboard_content)
+
                         elif event.key == pygame.K_DOWN:
                             if self.cursorpos[1] < len(self.values) - 1:
                                 self.cursorpos[1] += 1
@@ -244,7 +296,7 @@ class textInputNotepad:
 
                             redraw = True
 
-                        else:
+                        elif event.key!=pygame.K_LCTRL:
                             self.saved=False
                             self.removeSelection()
                             beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
