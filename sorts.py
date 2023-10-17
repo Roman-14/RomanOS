@@ -5,7 +5,7 @@ import threading
 import time
 import numpy as np
 import sounddevice as sd
-
+import math
 class Sort:
     def __init__(self, type, screen, quantity=100, delay=0.01) -> None:
         self.type = "Sort"
@@ -20,11 +20,11 @@ class Sort:
         self.bar = pygame.Rect(self.x, self.y, self.w, 10)
         self.exitRect = pygame.Rect(self.x + self.w - 8, self.y + 3, 5, 5)
 
-        
+        self.count=0
         self.quantity = quantity
 
         self.running = True
-
+        self.perm = False
         self.items = [i + 1 for i in range(self.quantity)]
         random.shuffle(self.items)
 
@@ -172,7 +172,7 @@ class Sort:
                     temp[j + 1] = temp2
                     self.items = temp
                     self.current_iterations = {j, j + 1}  # Update the current iterations
-                                   
+
             if before == self.items:
                 self.draw(self.screen, True)
                 self.current_iterations = set()
@@ -278,38 +278,48 @@ class Sort:
             pygame.draw.rect(screen, (70, 70, 70), self.rect)
             pygame.draw.rect(screen, (0, 0, 0), self.bar)
             pygame.draw.rect(screen, (255, 0, 0), self.exitRect)
-        
-        c = self.x
-        self.perm = check
-        
-        rect_width = self.w / self.quantity
-        rect_height = (self.h - 30) / len(self.items)
-        
-        if rect_width < 1:
-            rect_width = 1
-        if rect_height < 1:
-            rect_height = 1
 
-        if not check and not self.perm and self.running:
+        c = self.x
+        
+
+        if self.quantity <= 0:
+            return
+
+        rect_width = max(1, self.w / self.quantity)
+        rect_height = max(1, (self.h - 30) / len(self.items))
+
+        if (not check) and (not self.perm) and self.running:
             for i in range(len(self.items)):
                 if i in self.current_iterations:
                     pygame.draw.rect(self.screen, (255, 0, 0),
-                                    (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width), int(rect_height * self.items[i]))
+                                    (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i]))
                     )
                 else:
                     pygame.draw.rect(self.screen, (255, 255, 255),
-                                    (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width), int(rect_height * self.items[i])
+                                    (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i])
                     ))
                 c += rect_width
         elif self.running:
             self.current_iterations = {}
-            for i in self.items:
-                time.sleep(0.001)
-                pygame.draw.rect(self.screen, (100, 255, 100),
-                                (c, self.y + self.h - int(rect_height * i) - 5, int(rect_width), int(rect_height * i))
-                )
-                c += rect_width
 
+        if self.perm:
+            self.perm = not self.perm
+            threading.Thread(target=self.finishSort, args=(screen,)).start()
+        self.perm = check
+    def finishSort(self,screen):
+        
+        c=self.x
+        rect_width = max(1, self.w / self.quantity)
+        rect_height = max(1, (self.h - 30) / len(self.items))
+        while self.count<self.quantity:
+            time.sleep(self.delay)
+            for i in range(self.count):
+                pygame.draw.rect(self.screen, (100, 255, 100),(c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i])))
+                c+=rect_width
+                
+            c=self.x
+            self.count+=1
+            
     def mbHeld(self, mousePos):
         self.x = mousePos[0]
         self.y = mousePos[1]

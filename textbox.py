@@ -295,7 +295,15 @@ class textInputNotepad:
                                    
 
                             redraw = True
-
+                        elif event.key == pygame.K_TAB:
+                            self.saved = False
+                            beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
+                            afterCursor = self.values[self.cursorpos[1]][self.cursorpos[0]:]
+                            self.cursorpos[0]+= 4
+                            self.values[self.cursorpos[1]] = beforeCursor + "    " + afterCursor
+                            self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+                            self.text=self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+                            redraw = True
                         elif event.key!=pygame.K_LCTRL:
                             self.saved=False
                             self.removeSelection()
