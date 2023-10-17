@@ -16,6 +16,8 @@ class Sort:
         self.w = 600
         self.h = 400
 
+        self.green = 0
+
         self.rect = pygame.Rect((self.x, self.y, self.w, self.h))
         self.bar = pygame.Rect(self.x, self.y, self.w, 10)
         self.exitRect = pygame.Rect(self.x + self.w - 8, self.y + 3, 5, 5)
@@ -288,16 +290,16 @@ class Sort:
         rect_width = max(1, self.w / self.quantity)
         rect_height = max(1, (self.h - 30) / len(self.items))
 
-        if (not check) and (not self.perm) and self.running:
+        if self.running:
             for i in range(len(self.items)):
+                color = (255, 255, 255)
                 if i in self.current_iterations:
-                    pygame.draw.rect(self.screen, (255, 0, 0),
-                                    (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i]))
-                    )
-                else:
-                    pygame.draw.rect(self.screen, (255, 255, 255),
-                                    (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i])
-                    ))
+                    color = (255, 0, 0)
+                elif self.green > i:
+                    color = (100, 255, 100)
+
+
+                pygame.draw.rect(self.screen, color, (c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i])))
                 c += rect_width
         elif self.running:
             self.current_iterations = {}
@@ -308,18 +310,11 @@ class Sort:
         self.perm = check
     def finishSort(self,screen):
         
-        c=self.x
-        rect_width = max(1, self.w / self.quantity)
-        rect_height = max(1, (self.h - 30) / len(self.items))
-        while self.count<self.quantity:
+        for i in range(self.quantity):
             time.sleep(self.delay)
-            for i in range(self.count):
-                pygame.draw.rect(self.screen, (100, 255, 100),(c, self.y + self.h - int(rect_height * self.items[i]) - 5, int(rect_width)+(self.quantity>300), int(rect_height * self.items[i])))
-                c+=rect_width
-                
-            c=self.x
-            self.count+=1
-            
+            self.green+=1
+        if self.quantity == self.green:
+            self.green = 0
     def mbHeld(self, mousePos):
         self.x = mousePos[0]
         self.y = mousePos[1]

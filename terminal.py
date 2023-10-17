@@ -139,7 +139,7 @@ class Terminal:
         except OSError as e:
             dm.append(f"Error: {e}")
 
-    def command(self,values):
+    def command(self,values,autostart=""):
         self.scrollOffset=0
         global wallpaper
         global wallpapers
@@ -154,6 +154,9 @@ class Terminal:
         for i in "\n".join(values):
             if i != "\n":
                 self.cmd+=i
+        
+        if autostart!="":
+            self.cmd=autostart
         
         self.history.append(values)
         self.textInput.history=self.history
@@ -431,8 +434,46 @@ class Terminal:
             self.response=["Completed successfully."]
         elif self.cmd.lower()=="pyramid":
             assets.windows.append(threeDimensional.ThreeDimensional("pyramid",self.screen))
-            self.response=["Completed successfully."]   
+            self.response=["Completed successfully."]
+        elif len(self.cmd.split())>=2 and " ".join(self.cmd.lower().split()[0:2]) == "autostart add":
+            if not os.path.exists(path="data/autostart.txt"):
+                open("data/autostart.txt","x").close()
+            with open("data/autostart.txt", "a") as file:
+                if os.stat("data/autostart.txt").st_size == 0:
+                    file.write(" ".join(self.cmd.split()[2:]))
+                else:
+                    file.write(";"+" ".join(self.cmd.split()[2:]))
+            self.response=["Completed successfully.","Use 'autostart list' to view changes."]
+        elif len(self.cmd.split())>=3 and " ".join(self.cmd.lower().split()[0:2]) == "autostart remove":
+            if not os.path.exists(path="data/autostart.txt"):
+                open("data/autostart.txt","x").close()
+
+            file=open("data/autostart.txt","r")
+            firstline=file.readline()
+            file.close()
+            
+            index=int(self.cmd.split()[2])-1
+
+            firstline=firstline.split(";")
+            firstline=firstline[:index]+firstline[index+1:]
+            firstline=";".join(firstline)
+
+            with open("data/autostart.txt","w") as file:
+                file.write(firstline)
+
+            self.response=["Completed successfully"]
+        elif self.cmd.lower() == "autostart list":
+            if not os.path.exists(path="data/autostart.txt"):
+                open("data/autostart.txt","x").close()
+            with open("data/autostart.txt", "r") as file:
+                c=1
+                self.response=["Current commands:",""]
+                for i in file.readlines():
+                    for j in i.split(";"):
+                        self.response.append(f"{str(c)}, {j}")
+                        c+=1
         self.responses=[]
+
         for response in self.response:
             self.responses.append(self.font.render(response, True, (255, 255, 255)))
 

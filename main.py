@@ -56,6 +56,18 @@ exitRect = pygame.Rect(assets.width-20, 0, 20, 20)
 
 OSclock = Clock()
 
+def autoStart():
+    autostart = terminal.Terminal(screen)
+    autostartpath = "data/autostart.txt"
+    if not os.path.exists(autostartpath):
+        open(autostartpath,"x").close()
+    autostartdata = open(autostartpath,"r")
+    for i in autostartdata.readlines():
+        for j in i.split(";"):
+            autostart.command(values=[],autostart=j)
+
+autoStart()
+
 def blitandDraw():
     
     if terminal.custom!="null":

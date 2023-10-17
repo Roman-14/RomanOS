@@ -14,7 +14,8 @@
 - Play games (such as Tic Tac Toe against an AI)
 - Change the volume on linux and windows (theoretically mac too, but untested)
 - Can be run on a command line interface (Tested with ubuntu console)
-- Explore some cool rotating 3D shapes  
+- Explore some cool rotating 3D shapes 
+- Automatically run commands on startup 
 
 ## What is RomanOS?
 
