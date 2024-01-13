@@ -6,10 +6,6 @@ import threading
 import time
 import os
 
-from pydub import AudioSegment
-from pydub.playback import _play_with_pyaudio
-import pyaudio
-from pydub.utils import make_chunks
 
 
 class AudioPlayer:

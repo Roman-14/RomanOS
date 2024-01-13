@@ -1,0 +1,14 @@
+(29, 18)|Moon|gear|wallpaper moon
+(28, 18)|Ubuntu|gear|wallpaper ubuntu
+(27, 18)|Ship|gear|wallpaper ship
+(29, 17)|Car|gear|wallpaper car
+(28, 17)|Castle|gear|wallpaper castle
+(27, 17)|Circuits|gear|wallpaper circuitry
+(27, 19)|Cyberpunk|gear|wallpaper cyberpunk
+(28, 19)|Tokyo|gear|wallpaper tokyo
+(29, 19)|Waterfall|gear|wallpaper waterfall
+(0, 0)|Terminal|terminal|terminal
+(0, 1)|Bubble sort (350, 0.05)|barchart|bubble sort 350 0.05
+(1, 0)|Pyramid|shape|pyramid
+(1, 1)|Cube|shape|cube
+(0, 2)|Source Code|code|text main.py

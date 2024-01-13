@@ -9,8 +9,10 @@ elif len(sys.argv)>1 and sys.argv[1] == "--wayland":
     os.environ['SDL_VIDEODRIVER'] = 'wayland'
     
 while True:
+
     result = subprocess.Popen(["python3", "main.py"])
     result.communicate()
+
     if os.path.isfile("requested_action"):
         with open('requested_action', 'r') as f: 
             if f.readline() != 'restart':

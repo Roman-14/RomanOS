@@ -315,6 +315,7 @@ class Sort:
             self.green+=1
         if self.quantity == self.green:
             self.green = 0
+
     def mbHeld(self, mousePos):
         self.x = mousePos[0]
         self.y = mousePos[1]

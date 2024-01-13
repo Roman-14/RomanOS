@@ -7,7 +7,7 @@ import assets
 pygame.init()
 
 class textInput:
-    def __init__(self,x,y,w,h,type,history=[]):
+    def __init__(self,x,y,w,h,type,history=[],fontsize="default"):
         self.x=x
         self.y=y
         self.w=w
@@ -20,7 +20,10 @@ class textInput:
         self.value=""
         self.values=[self.value]
         self.textbox=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.font = assets.Defaultfont
+        if fontsize == "default":
+            self.font = assets.Defaultfont
+        else:
+            self.font = pygame.font.Font(None, fontsize)
         self.text = self.font.render(self.value, True, (255, 255, 255))
         self.texts=[self.text]
         self.focused=False
@@ -29,7 +32,6 @@ class textInput:
             if event.button==1:
                 if functions.collidePygameRect(self.textbox,mouse):
                     self.focused=True
-
                 else:
                     self.focused=False
         if self.focused:

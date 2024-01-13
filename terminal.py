@@ -181,9 +181,13 @@ class Terminal:
                            "games - shows a list of commands that launch games",
                            "sorts - shows a list of sorting algorithm commands",
                            "3d - shows some rotating 3d shape commands",
-                           "image <filename> - displays images."
+                           "image <filename> - displays images",
+                           "autostart help - shows autostart commands",
+                           "terminal - opens a new terminal",
                            ]
-            
+        elif self.cmd == "terminal":
+            assets.windows.append(Terminal(self.screen))
+            self.response=["Completed successfully."]
         elif self.cmd == "exit":
             if os.path.isfile("requested_action"):
                 os.remove("requested_action")
@@ -192,11 +196,11 @@ class Terminal:
             with open('requested_action', 'w') as f: f.write('restart')
             assets.running=False
             self.response=["Restarting..."]
-        elif os.path.exists(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))) and os.path.exists(os.path.join(os.getcwd(),"main.py")) and os.path.samefile(os.path.join(self.directory, " ".join(self.cmd.split()[1:])),os.path.join(os.getcwd(),"main.py")):
+        elif len(self.cmd.split()) > 1 and self.cmd.split()[0]=="python3" and os.path.exists(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))) and os.path.exists(os.path.join(os.getcwd(),"main.py")) and os.path.samefile(os.path.join(self.directory, " ".join(self.cmd.split()[1:])),os.path.join(os.getcwd(),"main.py")):
             with open('requested_action', 'w') as f: f.write('restart')
             assets.running=False
             self.response=["Restarting..."]
-        elif os.path.exists(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))) and os.path.exists(os.path.join(os.getcwd(),"wrapper.py")) and os.path.samefile(os.path.join(self.directory, " ".join(self.cmd.split()[1:])),os.path.join(os.getcwd(),"wrapper.py")):
+        elif len(self.cmd.split()) > 1 and self.cmd.split()[0]=="python3" and os.path.exists(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))) and os.path.exists(os.path.join(os.getcwd(),"wrapper.py")) and os.path.samefile(os.path.join(self.directory, " ".join(self.cmd.split()[1:])),os.path.join(os.getcwd(),"wrapper.py")):
             with open('requested_action', 'w') as f: f.write('restart')
             assets.running=False
             self.response=["Restarting..."]
@@ -451,7 +455,7 @@ class Terminal:
             file=open("data/autostart.txt","r")
             firstline=file.readline()
             file.close()
-            
+
             index=int(self.cmd.split()[2])-1
 
             firstline=firstline.split(";")
@@ -472,6 +476,12 @@ class Terminal:
                     for j in i.split(";"):
                         self.response.append(f"{str(c)}, {j}")
                         c+=1
+        elif self.cmd.lower() == "autostart help":
+            self.response=["The commands for autostart applications are: ",
+                           "autostart list - lists the commands that will run when the program starts.",
+                           "autostart add <command> - adds a command to the list",
+                           "autostart remove <command number> - removes a command from the list"]
+        
         self.responses=[]
 
         for response in self.response:
