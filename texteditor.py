@@ -2,6 +2,7 @@ import textbox
 import pygame
 import assets
 import window
+import functions
 
 class TextEditor(window.Window):
     def __init__(self,file,screen) -> None:
@@ -89,3 +90,35 @@ class TextEditor(window.Window):
 
         self.textInput.w = mousePos[0]-self.x+7
         self.textInput.h = mousePos[1]-self.y+7
+    
+    def onKeyDown(self, event) -> bool:
+        if self.textInput.focused:
+            self.textInput.update(event, assets.mousePos)
+            return 1
+        return 0
+    def onMouseMotion(self, event, mousePos) -> None:
+        if self.textInput.focused:
+            self.textInput.update(event, mousePos)
+    def onMouseButtonUp(self, event, mousePos) -> None:
+        self.textInput.update(event, mousePos)
+    def onMouseButtonDown(self, event, mousePos) -> bool:
+        self.textInput.update(event, mousePos)
+        return functions.collidePygameRect(self.rect, assets.mousePos)
+    def onScrollWheel(self, event, mousePos) -> bool:
+        if functions.collidePygameRect(self.rect, assets.mousePos):
+            scroll_amount = event.y * 10  # Keep the original sign
+
+            # Calculate the maximum scroll offset based on content height and window height
+            max_scroll_offset = max(0, len(self.textInput.values) * 25 - self.h + 10)
+
+            # Update the scroll offset within bounds
+            self.textInput.scrollOffset += scroll_amount
+            self.textInput.scrollOffset = min(0, max(self.textInput.scrollOffset, -max_scroll_offset))
+            return 1
+        return 0
+    def onResizeRectHeld(self, mousePos) -> bool:
+        if functions.collidePygameRect(self.resizeRect, mousePos):
+            assets.clicked_window = self
+            assets.heldresize = [True, self]
+            return 1
+        return 0

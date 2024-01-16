@@ -306,3 +306,5 @@ class Sort(window.Window):
         if self.quantity == self.green:
             self.green = 0
 
+    def onExitRectPressed(self):
+        self.running = False

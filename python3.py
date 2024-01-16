@@ -3,6 +3,8 @@ import pygame
 import subprocess
 import threading
 import window
+import assets
+import functions
 
 class Python3(window.Window):
     def __init__(self,file,directory,screen) -> None:
@@ -64,16 +66,39 @@ class Python3(window.Window):
         else:
             self.stdin_list=self.stdin_list[:-1]
         
-    def returnPressed(self):
-        self.textInput.value=""
-        self.textInput.values=[""]
-        self.textInput.text = self.textInput.font.render(self.textInput.value, True, (255, 255, 255))
-        self.textInput.texts=[self.textInput.text]
-        for i in self.stdin_list:
-            self.process.stdin.write(i.encode())
-        self.process.stdin.write(b'\n')
-        self.stdin_list = []
-        try:
-            self.process.stdin.flush()
-        except BrokenPipeError as e:
-            pass
+    def onReturnPressed(self):
+        if self.textInput.focused:
+            self.textInput.value=""
+            self.textInput.values=[""]
+            self.textInput.text = self.textInput.font.render(self.textInput.value, True, (255, 255, 255))
+            self.textInput.texts=[self.textInput.text]
+            for i in self.stdin_list:
+                self.process.stdin.write(i.encode())
+            self.process.stdin.write(b'\n')
+            self.stdin_list = []
+            try:
+                self.process.stdin.flush()
+            except BrokenPipeError as e:
+                pass
+    def onKeyDown(self, event) -> bool:
+        if self.textInput.focused:
+            if event.key == pygame.K_RETURN:
+                self.onReturnPressed()
+            self.keyPressed(event)
+            self.textInput.update(event, assets.mousePos)
+            return 1
+        return 0
+    def onMouseButtonDown(self, event, mousePos) -> None:
+        self.textInput.update(event, mousePos)
+    def onScrollWheel(self, event, mousePos) -> bool:
+        if functions.collidePygameRect(self.rect, assets.mousePos):
+            scroll_amount = event.y * 10  # Keep the original sign
+
+            # Calculate the maximum scroll offset based on content height and window height
+            max_scroll_offset = max(0, sum(text.decode().count("\n")+1 for text in self.stdout_list) * 25 - self.stdout.h)
+
+            # Update the scroll offset within bounds
+            self.scrollOffset += scroll_amount
+            self.scrollOffset = min(0, max(self.scrollOffset, -max_scroll_offset))
+            return 1
+        return 0

@@ -304,4 +304,7 @@ class TicTacToe(window.Window):
         
         if self.blityouwin or self.blitdraw or self.blityoulose:
             self.__init__(self.screen)
-            
+    
+    def onMouseButtonDown(self, event, mousePos) -> None:
+        self.update(mousePos)
+        return 1

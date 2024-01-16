@@ -7,9 +7,18 @@ running=True
 
 pygame.init()
 
+heldresize = [False,0]
+heldtoggle=[False,0]
+
+clicked_window = None
+
+rightClickCode = 3
+leftClickCode = 1
+
 screen_info = pygame.display.Info()
 width,height = (screen_info.current_w, screen_info.current_h)
-
+screen = pygame.display.set_mode((width, height),pygame.FULLSCREEN)
+mousePos = pygame.mouse.get_pos()
 if width >=1920:
     iconX=30
     iconY=20

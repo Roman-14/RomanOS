@@ -112,7 +112,30 @@ class Terminal(window.Window):
             return dm
         except OSError as e:
             dm.append(f"Error: {e}")
+    def onKeyDown(self, event) -> bool:
+        if self.textInput.focused:
+            self.textInput.update(event, assets.mousePos)
+            return 1
+        return 0
+    
+    def onScrollWheel(self, event, mousePos) -> bool:
+        if functions.collidePygameRect(self.rect,assets.mousePos):
+            scroll_amount = event.y * 10  # Keep the original sign
 
+            # Calculate the maximum scroll offset based on content height and window height
+            max_scroll_offset = max(0, len(self.responses) * 15 - self.h + 15)
+
+            # Update the scroll offset within bounds
+            self.scrollOffset += scroll_amount
+            self.scrollOffset = min(0, max(self.scrollOffset, -max_scroll_offset))
+            return 1
+        return 0
+    def onMouseButtonDown(self, event, mousePos) -> bool:
+        self.textInput.update(event, mousePos)
+        return functions.collidePygameRect(self.rect,assets.mousePos)
+    def onReturnPressed(self):
+        if self.textInput.focused:
+            self.command(self.textInput.values)
     def command(self,values,autostart=""):
         self.scrollOffset=0
         global wallpaper

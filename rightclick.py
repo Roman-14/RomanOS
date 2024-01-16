@@ -4,6 +4,30 @@ import functions
 import shortcut
 import terminal
 import math
+
+invisterminal = terminal.Terminal(assets.screen)
+rightClickBox = None
+
+def onRightClick(event, mousePos, rightClickBox):
+    for window in assets.windows:
+        if functions.collidePygameRect(window.rect,mousePos):
+            break
+    else:
+        if event.button == assets.rightClickCode:
+            locX,locY = (math.floor(mousePos[0]/assets.width*assets.iconX),math.floor(mousePos[1]/assets.height*assets.iconY))
+            if (locX,locY) not in assets.tiles:
+                rightClickBox = RightClickBox(x=mousePos[0],y=mousePos[1],clicked="empty slot",screen=assets.screen)
+            else:
+                rightClickBox = RightClickBox(x=mousePos[0],y=mousePos[1],clicked="filled slot",screen=assets.screen)
+        elif event.button == assets.leftClickCode:
+            for tile in assets.tiles:
+                if functions.collidePygameRect(pygame.Rect(tile[0]*assets.width/assets.iconX,tile[1]*assets.height/assets.iconY,assets.width/assets.iconX, assets.height/assets.iconY),mousePos):
+                    invisterminal.command(values=[],autostart=assets.tiles[tile][2])
+    if event.button == assets.leftClickCode:
+        if rightClickBox != None:
+            rightClickBox.update(mousePos)
+        rightClickBox=None
+    return rightClickBox
 class RightClickBox:
     def __init__(self,x,y,clicked,screen) -> None:
         self.screen = screen

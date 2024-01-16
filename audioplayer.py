@@ -5,6 +5,7 @@ import time
 import assets
 import os
 import window
+import functions
 
 class PlayAudio:
     def __init__(self, file):
@@ -127,3 +128,10 @@ class AudioPlayer(window.Window):
     def mbHeld(self,mousePos):
         super().mbHeld(mousePos)
         self.playlistRect = pygame.Rect(self.x+5,self.y+self.h-25,20,20)
+    def onExitRectPressed(self):
+        self.audioplayer.stop_playback()
+    def onButtonPress(self, mousePos) -> bool:
+        if functions.collidePygameRect(self.playlistRect, assets.mousePos):
+            self.playlistToggled = not self.playlistToggled
+            return 1
+        return 0

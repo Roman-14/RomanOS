@@ -1,4 +1,6 @@
 import pygame
+import functions
+import assets
 
 class Window:
     
@@ -19,19 +21,37 @@ class Window:
         pygame.draw.rect(screen,(0,0,0),self.bar)
         pygame.draw.rect(screen,(255,0,0),self.exitRect)
     
-    def onMouseButtonDown(self) -> None:
+    def onMouseButtonDown(self, event, mousePos) -> bool:
+        return functions.collidePygameRect(self.rect, assets.mousePos)
+
+    def onMouseButtonUp(self, event, mousePos) -> None:
         pass
 
-    def onRightClickDown(self) -> None:
+    def onRightClickDown(self, event, mousePos) -> None:
         pass
 
-    def onLeftClickDown(self) -> None:
+    def onLeftClickDown(self, event, mousePos) -> None:
+        pass
+    
+    def onMouseMotion(self, event, mousePos) -> None:
         pass
 
-    def onScrollWheel(self) -> None:
+    def onScrollWheel(self, event, mousePos) -> bool:
         pass
 
-    def onKeyDown(self) -> None:
+    def onButtonPress(self, mousePos) -> bool:
+        return 0
+
+    def onResizeRectHeld(self, mousePos) -> bool:
+        return 0
+    
+    def onKeyDown(self, event) -> bool:
+        return 0
+    
+    def onReturnPressed(self) -> None:
+        pass
+    
+    def onExitRectPressed(self) -> None:
         pass
 
     def mbHeld(self, mousePos) -> None:

@@ -105,3 +105,5 @@ class VideoPlayer(window.Window):
     def close(self):
         pygame.quit()
         exit()
+    def onExitRectPressed(self):
+        self.audioplayer.stop_playback()

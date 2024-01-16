@@ -4,9 +4,10 @@ import math
 import textbox
 import window
 import pygame
+import functions
 
 class Icons(window.Window):
-    def __init__(self,screen) -> None:
+    def __init__(self, screen) -> None:
         super().__init__(100, 100, 360, 240, screen, "Icons")
         self.chosenIcon = "terminal"
         self.scrollOffset=0
@@ -23,17 +24,19 @@ class Icons(window.Window):
             screen.subsurface((self.x,self.y,self.w,self.h)).blit(assets.icons[icon],(row*75,column*60+10))
             self.iconLocs[icon] = [self.x+row*75,self.y+column*60+10,assets.width/assets.iconX,assets.height/assets.iconY]
             row += 1
-            
-        
+    def onMouseButtonDown(self, event, mousePos) -> bool:
+        for key in self.iconLocs:
+            if functions.collidePygameRect(pygame.Rect(self.iconLocs[key][0],self.iconLocs[key][1],self.iconLocs[key][2],self.iconLocs[key][3]),assets.mousePos):
+                self.chosenIcon = key
+                assets.windows.remove(self)
+        return functions.collidePygameRect(self.rect, assets.mousePos)
+    
 class Shortcut(window.Window):
     def __init__(self,x,y,screen) -> None:
         super().__init__(100, 100, 360, 360, screen, "Shortcut", (255,190,11))
 
-
         self.locX, self.locY = (math.floor(x/assets.width*assets.iconX), math.floor(y/assets.height*assets.iconY))
         
-
-
         self.iconMenu = None
         self.chosenIcon = "terminal"
 
@@ -103,3 +106,25 @@ class Shortcut(window.Window):
         assets.tiles[(self.locX,self.locY)] = [self.nameInput.values[0],self.chosenIcon,"".join(self.commandInput.values)]
         assets.tilesOffset[(self.locX,self.locY)] = 0
         assets.windows.remove(self)
+    def onKeyDown(self, event) -> bool:
+        if self.nameInput.focused:
+            self.nameInput.update(event, assets.mousePos)
+            return 1
+        elif self.commandInput.focused:
+            self.commandInput.update(event, assets.mousePos)
+            return 1
+        return 0
+    def onMouseButtonDown(self, event, mousePos) -> bool:
+        self.nameInput.update(event, mousePos)
+        self.commandInput.update(event, mousePos)
+        if functions.collidePygameRect(self.addRect,assets.mousePos):
+            self.addRectClicked()
+            return 1
+        elif functions.collidePygameRect(self.submit_rect, assets.mousePos):
+            self.submitClicked()
+            return 1
+        return functions.collidePygameRect(self.rect, assets.mousePos)
+    def onExitRectPressed(self):
+        if self.iconMenu in assets.windows:
+            assets.windows.remove(self.iconMenu)
+            self.iconMenu = None

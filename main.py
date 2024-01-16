@@ -1,10 +1,7 @@
 """
 To do:
 -when making an audio and video window and then restarting, the restart doesn't work
--shortcut window textboxes and terminal textbox can both be focused into at same time, must be fixed
-
-- fix bug where one shortcut menu textbox and another textbox can both be focused on simultaneously
-
+- multiple instances of tic tac toe window causes weird problems
 - make restarting work during audio and video
 - allow the moving, creation (for txt) and deletion of files
 - add a horizontal scroll bar on text editor
@@ -13,35 +10,25 @@ To do:
 - when typing in files, allow basic auto complete functionality so that entering "python3 tes" gives "python3 test.py" 
 - allow deleting of files
 
+- make a flash cards app
 - more games such as minesweeper
 - plant growing app
 - 3D spinning stuff
-- custom icon commands
 - completely erradicate errors when typing invalid commands
-- find max refresh rate and make it the pygame fps
+- text editor selection stuff and cursor doesnt have a focus system
 """
 
 import os
-import sys
-#if len(sys.argv)>1 and sys.argv[1] == '--cli': os.environ['SDL_VIDEODRIVER'] = 'KMSDRM' #VERY IMPORTANT LINE!!!
 import pygame
 import functions
-import subprocess
 import terminal
 import assets
 import math
-import videoplayer
-import texteditor
-import python3
 from clock import Clock
 import rightclick
 
-#subprocess.Popen(["python3", "sound.py"])
-
-
 pygame.display.init()
 pygame.mixer.init()
-
 
 fps = 120
 
@@ -54,20 +41,15 @@ r = terminal.r
 g = terminal.g
 b = terminal.b
 
-screen = pygame.display.set_mode((assets.width, assets.height),pygame.FULLSCREEN)
-
 exitRect = pygame.Rect(assets.width-20, 0, 20, 20)
 
 OSclock = Clock()
 
-rightClickBox = "null"
-rightClickCode = 3
-leftClickCode = 1
 
-invisterminal = terminal.Terminal(screen)
+
 
 def autoStart():
-    autostart = terminal.Terminal(screen)
+    autostart = terminal.Terminal(assets.screen)
     autostartpath = "data/autostart.txt"
     if not os.path.exists(autostartpath):
         open(autostartpath,"x").close()
@@ -84,10 +66,10 @@ def blitandDraw():
     global rollingTextOffset
 
     if terminal.custom!="null":
-        screen.blit(terminal.custom,(0,0))
+        assets.screen.blit(terminal.custom,(0,0))
     else:
         if wallpaper!=str(wallpaper):
-            screen.blit(wallpaper, (0,0))
+            assets.screen.blit(wallpaper, (0,0))
         else:
             global r, g, b
             r = terminal.r
@@ -95,11 +77,11 @@ def blitandDraw():
             b = terminal.b
 
     for tile in assets.tiles:
-        screen.blit(assets.icons[assets.tiles[tile][1]],(tile[0]*assets.width/assets.iconX,tile[1]*assets.height/assets.iconY))
+        assets.screen.blit(assets.icons[assets.tiles[tile][1]],(tile[0]*assets.width/assets.iconX,tile[1]*assets.height/assets.iconY))
         
         tiletext = iconFont.render(assets.tiles[tile][0], True, (OSclock.r, OSclock.g, OSclock.b))
         try:
-            screen.subsurface((tile[0]*assets.width/assets.iconX,(tile[1])*assets.height/assets.iconY,assets.width/30,assets.height/20)).blit(tiletext,(assets.tilesOffset[tile],assets.height/20-20))
+            assets.screen.subsurface((tile[0]*assets.width/assets.iconX,(tile[1])*assets.height/assets.iconY,assets.width/30,assets.height/20)).blit(tiletext,(assets.tilesOffset[tile],assets.height/20-20))
         except ValueError:
             pass
         assets.tilesOffset[tile] += 1
@@ -108,218 +90,86 @@ def blitandDraw():
             if (tile[0]*assets.width/assets.iconX+assets.tilesOffset[offset]) > (tiletext.get_rect().x+(tile[0]+1)*assets.width/assets.iconX):
                 assets.tilesOffset[offset] = -1*tiletext.get_rect().w
 
-    #for i in range(20):
-    #    for j in range(30):
-    #        pygame.draw.circle(screen,(255,0,0),(j*assets.width/30,i*assets.height/20),2)
+    pygame.draw.rect(assets.screen, (255, 0, 0), exitRect)
 
-    pygame.draw.rect(screen, (255, 0, 0), exitRect)
+    assets.screen.blit(assets.power_off, (assets.width-20,0))
 
-    screen.blit(assets.power_off, (assets.width-20,0))
+    OSclock.draw(assets.screen)
 
-    OSclock.draw(screen)
-
-    if rightClickBox!="null":
-        rightClickBox.draw(screen)
+    if rightclick.rightClickBox!=None:
+        rightclick.rightClickBox.draw(assets.screen)
     for window in assets.windows[::-1]:
-        window.draw(screen)
+        window.draw(assets.screen)
     
-    
-
-heldtoggle=[False,0]
-
-heldresize=[False,0]
-
 markedWindow = None
 
 while assets.running:
-    screen.fill((r, g, b))
+    assets.screen.fill((r, g, b))
     wallpaper = terminal.wallpaper
+    assets.mousePos = pygame.mouse.get_pos()
     for event in pygame.event.get():
-        for window in assets.windows:
+        for window in assets.windows[:]:
             if event.type==pygame.KEYDOWN:
-                if window.type=="Python3" and window.textInput.focused:
-                    window.keyPressed(event)
-                if (window.type == "Python3" or window.type=="terminal" or window.type=="TextEditor") and window.textInput.focused:
-                    window.textInput.update(event,pygame.mouse.get_pos())
-                    break
-                if window.type == "Shortcut" and window.nameInput.focused:
-                    window.nameInput.update(event,pygame.mouse.get_pos())
-                elif window.type == "Shortcut" and window.commandInput.focused:
-                    window.commandInput.update(event,pygame.mouse.get_pos())
-            elif window.type == "TextEditor" and window.textInput.focused and event.type == pygame.MOUSEMOTION:
-                window.textInput.update(event,pygame.mouse.get_pos())
-            elif event.type==pygame.MOUSEBUTTONUP:
-                if window.type == "TextEditor":
-                    window.textInput.update(event)
-            elif event.type==pygame.MOUSEBUTTONDOWN:
-                if window.type == "Icons":
-                    for key in window.iconLocs:
-                        if functions.collidePygameRect(pygame.Rect(window.iconLocs[key][0],window.iconLocs[key][1],window.iconLocs[key][2],window.iconLocs[key][3]),pygame.mouse.get_pos()):
-                            window.chosenIcon = key
-                            markedWindow = window
-                    break
-                if window.type == "Python3" or window.type=="terminal" or window.type=="TextEditor":
-                    window.textInput.update(event,pygame.mouse.get_pos())
-                        
-                    
-                if window.type == "Shortcut":
-                    window.nameInput.update(event,pygame.mouse.get_pos())    
-                    window.commandInput.update(event,pygame.mouse.get_pos())
-                    if window.iconMenu!=None and functions.collidePygameRect(window.iconMenu.exitRect,pygame.mouse.get_pos()):
-                        window.iconMenu=None
-
-                if window.type == "TicTacToe":
-                    window.update(pygame.mouse.get_pos())
-                if window.type == "Shortcut" and functions.collidePygameRect(window.submit_rect,pygame.mouse.get_pos()):
-                    window.submitClicked()
-                    break
-                if window.type == "Shortcut" and functions.collidePygameRect(window.addRect,pygame.mouse.get_pos()):
-                    window.addRectClicked()
+                if window.type == "terminal" and window.textInput.focused:
+                    window.toggleResponse = False
+                if event.key == pygame.K_RETURN:
+                    window.onReturnPressed()
+                elif window.onKeyDown(event):
                     break
                 
+            elif event.type == pygame.MOUSEMOTION:
+                window.onMouseMotion(event, assets.mousePos)
+            elif event.type==pygame.MOUSEBUTTONUP:
+                window.onMouseButtonUp(event, assets.mousePos)
+            elif event.type==pygame.MOUSEBUTTONDOWN:
+                if event.button == assets.leftClickCode:
+                    if functions.collidePygameRect(window.exitRect,assets.mousePos):
+                        window.onExitRectPressed()           
+                        assets.windows.remove(window)
+                    elif functions.collidePygameRect(window.bar,assets.mousePos) and not functions.collidePygameRect(window.exitRect,assets.mousePos):
+                        assets.clicked_window=window
+                        assets.heldtoggle=[True,window]
+                    if window.onButtonPress(assets.mousePos):
+                        break
+                    if window.onResizeRectHeld(assets.mousePos):
+                        break
+                if window.onMouseButtonDown(event, assets.mousePos):
+                    break
             elif event.type==pygame.MOUSEWHEEL:
-                #Scroll down is negative, scroll up is positive
-                if window.type=="terminal" and functions.collidePygameRect(window.rect,pygame.mouse.get_pos()):
-                    scroll_amount = event.y * 10  # Keep the original sign
-
-                    # Calculate the maximum scroll offset based on content height and window height
-                    max_scroll_offset = max(0, len(window.responses) * 15 - window.h + 15)
-
-                    # Update the scroll offset within bounds
-                    window.scrollOffset += scroll_amount
-                    window.scrollOffset = min(0, max(window.scrollOffset, -max_scroll_offset))
-                    break
-                elif window.type == "TextEditor" and functions.collidePygameRect(window.rect, pygame.mouse.get_pos()):
-                    scroll_amount = event.y * 10  # Keep the original sign
-
-                    # Calculate the maximum scroll offset based on content height and window height
-                    max_scroll_offset = max(0, len(window.textInput.values) * 25 - window.h + 10)
-
-                    # Update the scroll offset within bounds
-                    window.textInput.scrollOffset += scroll_amount
-                    window.textInput.scrollOffset = min(0, max(window.textInput.scrollOffset, -max_scroll_offset))
-                    break
-                elif window.type == "Python3" and functions.collidePygameRect(window.rect, pygame.mouse.get_pos()):
-                    scroll_amount = event.y * 10  # Keep the original sign
-
-                    # Calculate the maximum scroll offset based on content height and window height
-                    max_scroll_offset = max(0, sum(text.decode().count("\n")+1 for text in window.stdout_list) * 25 - window.stdout.h)
-
-                    # Update the scroll offset within bounds
-                    window.scrollOffset += scroll_amount
-                    window.scrollOffset = min(0, max(window.scrollOffset, -max_scroll_offset))
-                    break
-
-        if markedWindow:
-            tempwindowsMarking = []
-            for twindow in assets.windows:
-                if twindow != markedWindow:
-                    tempwindowsMarking.append(twindow)
-            assets.windows = tempwindowsMarking
-            markedWindow = None
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for window in assets.windows:
-                if functions.collidePygameRect(window.rect,pygame.mouse.get_pos()):
-                    break
-            else:
-                if event.button == rightClickCode:
-                    locX,locY = (math.floor(pygame.mouse.get_pos()[0]/assets.width*assets.iconX),math.floor(pygame.mouse.get_pos()[1]/assets.height*assets.iconY))
-                    if (locX,locY) not in assets.tiles:
-                        rightClickBox = rightclick.RightClickBox(x=pygame.mouse.get_pos()[0],y=pygame.mouse.get_pos()[1],clicked="empty slot",screen=screen)
-                    else:
-                        rightClickBox = rightclick.RightClickBox(x=pygame.mouse.get_pos()[0],y=pygame.mouse.get_pos()[1],clicked="filled slot",screen=screen)
-                elif event.button == leftClickCode:
-                    for tile in assets.tiles:
-                        if functions.collidePygameRect(pygame.Rect(tile[0]*assets.width/assets.iconX,tile[1]*assets.height/assets.iconY,assets.width/assets.iconX, assets.height/assets.iconY),pygame.mouse.get_pos()):
-                            invisterminal.command(values=[],autostart=assets.tiles[tile][2])
-            if event.button == leftClickCode:
-                if rightClickBox != "null":
-                    rightClickBox.update(pygame.mouse.get_pos())
-                rightClickBox="null"
+                window.onScrollWheel(event, assets.mousePos)
 
         if event.type == pygame.QUIT:
             assets.running = False
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
+                if os.path.isfile("requested_action"):
+                    os.remove("requested_action")
                 assets.running = False
-            elif event.key == pygame.K_RETURN:
-                for window in assets.windows:
-                    if window.type=="terminal" and window.textInput.focused:
-                        window.command(window.textInput.values)
-                        wallpaper = terminal.wallpaper
-                    elif window.type=="Python3" and window.textInput.focused:
-                        window.returnPressed()
-            else:
-                for window in assets.windows:
-                    if window.type=="terminal" and window.textInput.focused:
-                        window.toggleResponse=False
-        if pygame.mouse.get_pressed()[0] and event.type==pygame.MOUSEBUTTONDOWN:
-            clicked_window=None
-            for window in assets.windows:
-                if functions.collidePygameRect(window.bar,pygame.mouse.get_pos()) and not functions.collidePygameRect(window.exitRect,pygame.mouse.get_pos()):
-                    clicked_window=window
-                    heldtoggle=[True,window]
-                elif window.type == "Shortcut" and window.iconMenu != None and functions.collidePygameRect(window.iconMenu.bar,pygame.mouse.get_pos()):
-                    clicked_window=window.iconMenu
-                    heldtoggle=[True,window.iconMenu]
-                elif window.type == "TextEditor" and functions.collidePygameRect(window.resizeRect,pygame.mouse.get_pos()):
-                    clicked_window=window
-                    heldresize = [True, window]
-                    break
-                elif functions.collidePygameRect(window.exitRect,pygame.mouse.get_pos()):
-                    if window.type=="VideoPlayer" or window.type=="AudioPlayer":
-                       window.audioplayer.stop_playback()
-                    elif window.type=="Sort":
-                        window.running=False
-                    elif window.type == "Shortcut":
-                        temporaryWindows = []
-                        for potentialIconMenu in assets.windows:
-                            if not potentialIconMenu == window.iconMenu:
-                                temporaryWindows.append(potentialIconMenu)
-                        assets.windows=temporaryWindows
-                        window.iconMenu = None
-                        
-                        
-                    tempwindows=[]
-                    for window2 in assets.windows:
-                        if window2!=window:
-                            tempwindows.append(window2)
-                    break
-                    
-                elif window.type == "AudioPlayer" and functions.collidePygameRect(window.playlistRect,pygame.mouse.get_pos()):
-                    window.playlistToggled = not window.playlistToggled
-                    break
-            try:
-                assets.windows=tempwindows
-            except NameError as e:
-                pass
-            if clicked_window is not None and clicked_window in assets.windows:
-                assets.windows.remove(clicked_window) 
-                assets.windows.insert(0, clicked_window)
+
+        if assets.clicked_window != None and assets.clicked_window in assets.windows:
+            assets.windows.remove(assets.clicked_window) 
+            assets.windows.insert(0, assets.clicked_window)
 
         if event.type == pygame.MOUSEBUTTONUP:
-            heldtoggle[0]=False
-            heldresize[0]=False
-
-        for window in assets.windows:
-            if assets.terminalImg.get_rect().colliderect(window.rect):
-                break
-        else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button==leftClickCode:
-                    if functions.collidePygameRect(exitRect,pygame.mouse.get_pos()):
-                        if os.path.isfile("requested_action"):
-                            os.remove("requested_action")
-                        assets.running=False
-                        print("Goodbye!")
+            assets.heldtoggle[0]=False
+            assets.heldresize[0]=False
 
 
-    if heldtoggle[0]==True:
-        heldtoggle[1].mbHeld(pygame.mouse.get_pos())
-    elif heldresize[0]==True:
-        heldresize[1].resizeHeld(pygame.mouse.get_pos())
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            rightclick.rightClickBox = rightclick.onRightClick(event, assets.mousePos, rightclick.rightClickBox)
+            if event.button==assets.leftClickCode:
+                if functions.collidePygameRect(exitRect,assets.mousePos):
+                    if os.path.isfile("requested_action"):
+                        os.remove("requested_action")
+                    assets.running=False
+                    print("Goodbye!")
+
+
+    if assets.heldtoggle[0]==True:
+        assets.heldtoggle[1].mbHeld(assets.mousePos)
+    elif assets.heldresize[0]==True:
+        assets.heldresize[1].resizeHeld(assets.mousePos)
 
     blitandDraw()
 
