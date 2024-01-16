@@ -2,6 +2,7 @@ import pygame
 import functions
 import random
 import assets
+import window
 
 class TicTacToe2:
     def __init__(self):
@@ -77,20 +78,11 @@ class TicTacToe2:
         return move
 
 
-class TicTacToe:
-    def __init__(self,screen,x=100,y=100) -> None:
-        self.x=x
-        self.y=y
-        self.w=360
-        self.h=240
+class TicTacToe(window.Window):
+    def __init__(self,screen) -> None:
+        super().__init__(100, 100, 360, 240, screen, "TicTacToe", (20, 189, 172))
 
         self.scrollOffset=0
-
-        self.rect=pygame.Rect((self.x,self.y,self.w,self.h))
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
-
-        self.screen=screen
 
         self.font = assets.Defaultfont
 
@@ -104,7 +96,6 @@ class TicTacToe:
         self.hardrect =  pygame.Rect(self.x+self.w*0.5-50,self.y+self.h*0.7-20,100,40)
         self.phase = 1
 
-        self.type = "TicTacToe"
 
         self.a1=pygame.Rect((self.x+95,self.y+40,50,45))
         self.b1=pygame.Rect((self.x+95+50+10,self.y+40,55,45))
@@ -192,11 +183,7 @@ class TicTacToe:
         if self.game.board[2][2]=="O":
             self.drawO(screen,self.x+240,self.y+185)
     def draw(self,screen) -> None:
-        
-        pygame.draw.rect(screen,(20, 189, 172),self.rect)
-        pygame.draw.rect(screen,(0,0,0),self.bar)
-        pygame.draw.rect(screen,(255,0,0),self.exitRect)
-
+        super().draw(screen)
         if self.phase==1:
             self.drawStart(screen)
         elif self.phase==2:
@@ -218,21 +205,7 @@ class TicTacToe:
             elif self.blitdraw:
                 screen.blit(self.drawtext,(self.x+self.w/2-20,self.y+self.h-30))
     def mbHeld(self,mousePos):
-        self.x=mousePos[0]
-        self.y=mousePos[1]
-
-        if (self.x+self.w)>=self.screen.get_rect().w:
-            self.x=self.screen.get_rect().w-self.w
-        elif self.x<=0:
-            self.x=0
-        if (self.y+self.h)>=self.screen.get_rect().h:
-            self.y=self.screen.get_rect().h-self.h
-        elif self.y<=0:
-            self.y=0
-            
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
+        super().mbHeld(mousePos)
 
         self.easyrect = pygame.Rect(self.x+self.w*0.5-50,self.y+self.h*0.3-20,100,40)
         self.mediumrect = pygame.Rect(self.x+self.w*0.5-50,self.y+self.h*0.5-20,100,40)
@@ -330,5 +303,5 @@ class TicTacToe:
                 self.difficulty = "hard"
         
         if self.blityouwin or self.blitdraw or self.blityoulose:
-            self.__init__(self.screen,self.x,self.y)
+            self.__init__(self.screen)
             

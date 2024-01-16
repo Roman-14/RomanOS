@@ -4,6 +4,8 @@ import threading
 import time
 import assets
 import os
+import window
+
 class PlayAudio:
     def __init__(self, file):
         self.file = file
@@ -57,20 +59,9 @@ class PlayAudio:
         print("Over!")
         self.running = False
         self.thread.join()
-class AudioPlayer:
+class AudioPlayer(window.Window):
     def __init__(self,file,screen,directory) -> None:
-        #make filename appear as rolling text
-        #print(file,directory)
-        self.screen=screen
-        self.x=100
-        self.y=100
-        self.w=300
-        self.h=200
-        self.colour=(137,8,22)
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
-        self.type="AudioPlayer"
+        super().__init__(100, 100, 300, 200, screen, "AudioPlayer", (137,8,22))
         self.file=file
         self.audioplayer=PlayAudio(self.file)
         self.audioplayer.start_playback()
@@ -110,9 +101,7 @@ class AudioPlayer:
             print("Error parsing duration.")
 
     def draw(self,screen):
-        pygame.draw.rect(screen,self.colour,self.rect)
-        pygame.draw.rect(screen,(0,0,0),self.bar)
-        pygame.draw.rect(screen,(255,0,0),self.exitRect)
+        super().draw(screen)
         if self.playlistToggled:
             pygame.draw.circle(screen, (100,100,255), (self.x+15,self.y+self.h-15),14)
         screen.blit(assets.playlist, (self.x+5,self.y+self.h-25))
@@ -136,19 +125,5 @@ class AudioPlayer:
         except ValueError as e:
             pass
     def mbHeld(self,mousePos):
-        self.x=mousePos[0]
-        self.y=mousePos[1]
-
-        if (self.x+self.w)>=self.screen.get_rect().w:
-            self.x=self.screen.get_rect().w-self.w
-        elif self.x<=0:
-            self.x=0
-        if (self.y+self.h)>=self.screen.get_rect().h:
-            self.y=self.screen.get_rect().h-self.h
-        elif self.y<=0:
-            self.y=0
-            
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
+        super().mbHeld(mousePos)
         self.playlistRect = pygame.Rect(self.x+5,self.y+self.h-25,20,20)

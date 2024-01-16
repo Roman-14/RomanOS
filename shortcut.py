@@ -2,27 +2,17 @@ import pygame
 import assets
 import math
 import textbox
-
+import window
 import pygame
 
-class Icons:
+class Icons(window.Window):
     def __init__(self,screen) -> None:
-        self.type="Icons"
+        super().__init__(100, 100, 360, 240, screen, "Icons")
         self.chosenIcon = "terminal"
-        self.screen = screen
-        self.x=100
-        self.y=100
-        self.w=360
-        self.h=240
         self.scrollOffset=0
-        self.rect=pygame.Rect((self.x,self.y,self.w,self.h))
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
         self.iconLocs = {}
     def draw(self,screen):
-        pygame.draw.rect(screen,(70,70,70),self.rect)
-        pygame.draw.rect(screen,(0,0,0),self.bar)
-        pygame.draw.rect(screen,(255,0,0),self.exitRect)
+        super().draw(screen)
         column = 0
         row = 0
         self.iconLocs = {}
@@ -34,43 +24,15 @@ class Icons:
             self.iconLocs[icon] = [self.x+row*75,self.y+column*60+10,assets.width/assets.iconX,assets.height/assets.iconY]
             row += 1
             
-    def mbHeld(self,mousePos):
-        self.x=mousePos[0]
-        self.y=mousePos[1]
-
-        if (self.x+self.w)>=self.screen.get_rect().w:
-            self.x=self.screen.get_rect().w-self.w
-        elif self.x<=0:
-            self.x=0
-        if (self.y+self.h)>=self.screen.get_rect().h:
-            self.y=self.screen.get_rect().h-self.h
-        elif self.y<=0:
-            self.y=0
-            
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
-
-        self.stdout=pygame.Rect(self.x+10,self.y+20,self.w-20,80)
-        self.stdin=pygame.Rect(self.x+10,self.y+130,self.w-20,80)
         
-class Shortcut:
+class Shortcut(window.Window):
     def __init__(self,x,y,screen) -> None:
-        self.type="Shortcut"
-        self.screen = screen
-        self.x = x
-        self.y = y
+        super().__init__(100, 100, 360, 360, screen, "Shortcut", (255,190,11))
 
-        self.locX, self.locY = (math.floor(self.x/assets.width*assets.iconX), math.floor(self.y/assets.height*assets.iconY))
+
+        self.locX, self.locY = (math.floor(x/assets.width*assets.iconX), math.floor(y/assets.height*assets.iconY))
         
-        self.x=100
-        self.y=100
-        self.w=360
-        self.h=360
 
-        self.rect=pygame.Rect((self.x,self.y,self.w,self.h))
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
 
         self.iconMenu = None
         self.chosenIcon = "terminal"
@@ -96,11 +58,9 @@ class Shortcut:
         assets.windows = [self.iconMenu] + assets.windows
 
     def draw(self,screen):
+        super().draw(screen)
         if self.iconMenu:
             self.chosenIcon = self.iconMenu.chosenIcon
-        pygame.draw.rect(screen,"#FFBE0B",self.rect)
-        pygame.draw.rect(screen,(0,0,0),self.bar)
-        pygame.draw.rect(screen,(255,0,0),self.exitRect)
 
         pygame.draw.rect(screen,(0,255,0),self.submit_rect)
 
@@ -129,21 +89,7 @@ class Shortcut:
         #if self.iconMenu != None:
         #    self.iconMenu.draw(screen)
     def mbHeld(self,mousePos):
-        self.x=mousePos[0]
-        self.y=mousePos[1]
-
-        if (self.x+self.w)>=self.screen.get_rect().w:
-            self.x=self.screen.get_rect().w-self.w
-        elif self.x<=0:
-            self.x=0
-        if (self.y+self.h)>=self.screen.get_rect().h:
-            self.y=self.screen.get_rect().h-self.h
-        elif self.y<=0:
-            self.y=0
-            
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
+        super().mbHeld(mousePos)
         self.addRect = pygame.Rect(self.x+30,self.y+155,35,35)
         self.nameRect = pygame.Rect(self.x+30,self.y+80,300,50)
         self.commandRect = pygame.Rect(self.x+30,self.y+240,300,50)
@@ -157,4 +103,3 @@ class Shortcut:
         assets.tiles[(self.locX,self.locY)] = [self.nameInput.values[0],self.chosenIcon,"".join(self.commandInput.values)]
         assets.tilesOffset[(self.locX,self.locY)] = 0
         assets.windows.remove(self)
-        del self

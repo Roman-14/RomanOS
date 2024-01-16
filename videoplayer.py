@@ -5,7 +5,7 @@ import subprocess
 import threading
 import time
 import os
-
+import window
 
 
 class AudioPlayer:
@@ -55,10 +55,10 @@ class AudioPlayer:
         self.thread.join()
 
 
-class VideoPlayer:
+class VideoPlayer(window.Window):
 
     def __init__(self, videopath,screen):
-            self.screen=screen
+            super().__init__(100, 100, 300, 200, screen, "VideoPlayer")
             self.videopath=videopath
             self.video = cv2.VideoCapture(videopath)
             self.video_fps = self.video.get(cv2.CAP_PROP_FPS)
@@ -67,35 +67,11 @@ class VideoPlayer:
             self.clock = pygame.time.Clock()
             self.success, self.video_image = self.video.read()
             self.video_size = self.video_image.shape[1::-1]
-            self.x=100
-            self.y=100
-            self.w=300
-            self.h=200
             self.video_surf = None
-            self.type="VideoPlayer"
-            self.rect = pygame.Rect((self.x,self.y,self.w,self.h))
-            self.bar=pygame.Rect(self.x,self.y-10,self.w,10)
-            self.exitRect=pygame.Rect(self.x+self.w-8,self.y-7,5,5)
 
             self.audioplayer=AudioPlayer(self.videopath)
             
             threading.Thread(target=self.audioplayer.start_playback).start()
-    def mbHeld(self,mousePos):
-        self.x=mousePos[0]
-        self.y=mousePos[1]
-
-        if (self.x+self.w)>=self.screen.get_rect().w:
-            self.x=self.screen.get_rect().w-self.w
-        elif self.x<=0:
-            self.x=0
-        if (self.y+self.h)>=self.screen.get_rect().h:
-            self.y=self.screen.get_rect().h-self.h
-        elif self.y<=0:
-            self.y=0
-            
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
     def draw(self, screen):
         self.current_frame_shown_for += self.clock.get_time() / 1000
         while self.success and self.current_frame_shown_for > self.video_spf:

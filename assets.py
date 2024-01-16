@@ -134,4 +134,16 @@ barchartImg = pygame.transform.scale(barchartImg, (width/iconX, height/iconY))
 codeImg = pygame.image.load('assets/code')
 codeImg = pygame.transform.scale(codeImg, (width/iconX, height/iconY))
 
-icons = {"terminal" : terminalImg, "shape" : shapeImg, "warning" : warningImg, "gear" : gearImg, "barchart" : barchartImg, "code" : codeImg}
+musicImg = pygame.image.load('assets/music')
+musicImg = pygame.transform.scale(musicImg, (width/iconX, height/iconY))
+
+gameImg = pygame.image.load('assets/game')
+gameImg = pygame.transform.scale(gameImg, (width/iconX, height/iconY))
+
+videoImg = pygame.image.load('assets/video')
+videoImg = pygame.transform.scale(videoImg, (width/iconX, height/iconY))
+
+restartImg = pygame.image.load('assets/restart')
+restartImg = pygame.transform.scale(restartImg, (width/iconX, height/iconY))
+
+icons = {"terminal" : terminalImg, "shape" : shapeImg, "warning" : warningImg, "gear" : gearImg, "barchart" : barchartImg, "code" : codeImg, "music" : musicImg, "game" : gameImg, "video" : videoImg, "restart" : restartImg}

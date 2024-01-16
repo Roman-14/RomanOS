@@ -1,6 +1,6 @@
 """
 To do:
-
+-when making an audio and video window and then restarting, the restart doesn't work
 -shortcut window textboxes and terminal textbox can both be focused into at same time, must be fixed
 
 - fix bug where one shortcut menu textbox and another textbox can both be focused on simultaneously
@@ -98,9 +98,10 @@ def blitandDraw():
         screen.blit(assets.icons[assets.tiles[tile][1]],(tile[0]*assets.width/assets.iconX,tile[1]*assets.height/assets.iconY))
         
         tiletext = iconFont.render(assets.tiles[tile][0], True, (OSclock.r, OSclock.g, OSclock.b))
-        
-        screen.subsurface((tile[0]*assets.width/assets.iconX,(tile[1])*assets.height/assets.iconY,assets.width/30,assets.height/20)).blit(tiletext,(assets.tilesOffset[tile],assets.height/20-20))
-        
+        try:
+            screen.subsurface((tile[0]*assets.width/assets.iconX,(tile[1])*assets.height/assets.iconY,assets.width/30,assets.height/20)).blit(tiletext,(assets.tilesOffset[tile],assets.height/20-20))
+        except ValueError:
+            pass
         assets.tilesOffset[tile] += 1
 
         for offset in assets.tilesOffset:

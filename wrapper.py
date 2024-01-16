@@ -10,7 +10,7 @@ elif len(sys.argv)>1 and sys.argv[1] == "--wayland":
     
 while True:
 
-    result = subprocess.Popen(["python3", "main.py"])
+    result = subprocess.Popen([sys.executable, "main.py"])
     result.communicate()
 
     if os.path.isfile("requested_action"):

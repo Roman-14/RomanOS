@@ -12,3 +12,8 @@
 (1, 0)|Pyramid|shape|pyramid
 (1, 1)|Cube|shape|cube
 (0, 2)|Source Code|code|text main.py
+(0, 3)|Music|music|audio tests/test.mp3
+(1, 2)|Mysterious Video|video|video tests/test.mp4
+(1, 3)|Tic Tac Toe|game|ttt
+(2, 0)|test.py|code|python3 tests/test.py
+(0, 19)|Restart|restart|r

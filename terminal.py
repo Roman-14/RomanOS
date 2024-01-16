@@ -15,6 +15,7 @@ import sys
 import sorts
 import threeDimensional
 import imageviewer
+import window
 wallpaper = assets.background
 wallpapers={
     "windows_grass" : assets.background,
@@ -49,31 +50,21 @@ custom="null"
 
 
 
-class Terminal:
+class Terminal(window.Window):
     def __init__(self,screen) -> None:
-        self.screen=screen
-        self.type = "terminal"
-        self.x=100
-        self.y=100
-        self.w=300
-        self.h=200
+        super().__init__(100, 100, 300, 200, screen, "terminal")
         self.textInput = textbox.textInput(self.x,self.y,self.w,self.h,self.type)
         self.font = pygame.font.Font(None, 16)
         self.toggleResponse=False
         self.responses=[]
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar = pygame.Rect(self.x,self.y,self.w,10)
         self.directory = os.path.dirname(os.path.abspath(__file__))
         self.scrollOffset=0
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
         self.history = []
         self.video_extensions = ['.avi', '.mkv', '.mov', '.mp4', '.mpg', '.mpeg', '.wmv', '.flv', '.webm']
         self.audiofiletypes = [".wav",".mp3",".aac",".flac",".ogg",".aiff",".wma",".midi",".amr",".ac3",".m4a",".opus","au"]
         self.textfiletypes=["txt","py","cpp","rb","html","css","js","json","xml","sql","csv","md","java","php","c","h","sh","log","yml","yaml","ini","cfg","bat","tex","svg","scss"]
     def draw(self, screen):
-        pygame.draw.rect(screen,(70,70,70),self.rect)
-        pygame.draw.rect(screen,(10,10,10),self.bar)
-        pygame.draw.rect(screen,(255,0,0),self.exitRect)
+        super().draw(screen)
         try:
             c=0
             for text in self.textInput.texts:
@@ -88,26 +79,9 @@ class Terminal:
             self.mbHeld((100,100))
 
     def mbHeld(self,mousePos):
-        self.x=mousePos[0]
-        self.y=mousePos[1]
-
-        try:
-            if (self.x+self.w)>=self.screen.get_rect().w:
-                self.x=self.screen.get_rect().w-self.w
-            elif self.x<=0:
-                self.x=0
-            if (self.y+self.h)>=self.screen.get_rect().h:
-                self.y=self.screen.get_rect().h-self.h
-            elif self.y<=0:
-                self.y=0
-        except AttributeError as e:
-            #self.screen doesn't exist
-            pass
-
-        self.rect=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.bar=pygame.Rect(self.x,self.y,self.w,10)
+        super().mbHeld(mousePos)
         self.textInput.textbox=pygame.Rect(self.x,self.y,self.w,self.h)
-        self.exitRect=pygame.Rect(self.x+self.w-8,self.y+3,5,5)
+
     
     def audio_get_files(self,args):
        # try:

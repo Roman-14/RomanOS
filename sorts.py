@@ -6,21 +6,14 @@ import time
 import numpy as np
 import sounddevice as sd
 import math
-class Sort:
+import window
+
+class Sort(window.Window):
     def __init__(self, type, screen, quantity=100, delay=0.01) -> None:
-        self.type = "Sort"
+        super().__init__(100, 100, 600, 400, screen, "Sort")
         if quantity>380:
             self.type = "None"
-        self.x = 100
-        self.y = 100
-        self.w = 600
-        self.h = 400
-
         self.green = 0
-
-        self.rect = pygame.Rect((self.x, self.y, self.w, self.h))
-        self.bar = pygame.Rect(self.x, self.y, self.w, 10)
-        self.exitRect = pygame.Rect(self.x + self.w - 8, self.y + 3, 5, 5)
 
         self.count=0
         self.quantity = quantity
@@ -30,7 +23,6 @@ class Sort:
         self.items = [i + 1 for i in range(self.quantity)]
         random.shuffle(self.items)
 
-        self.screen = screen
         self.delay = delay
         self.current_iterations = set()  # To keep track of the current iterations
 
@@ -277,9 +269,7 @@ class Sort:
 
     def draw(self, screen, check=False):
         if self.running:
-            pygame.draw.rect(screen, (70, 70, 70), self.rect)
-            pygame.draw.rect(screen, (0, 0, 0), self.bar)
-            pygame.draw.rect(screen, (255, 0, 0), self.exitRect)
+            super().draw(screen)
 
         c = self.x
         
@@ -316,19 +306,3 @@ class Sort:
         if self.quantity == self.green:
             self.green = 0
 
-    def mbHeld(self, mousePos):
-        self.x = mousePos[0]
-        self.y = mousePos[1]
-
-        if (self.x + self.w) >= self.screen.get_rect().w:
-            self.x = self.screen.get_rect().w - self.w
-        elif self.x <= 0:
-            self.x = 0
-        if (self.y + self.h) >= self.screen.get_rect().h:
-            self.y = self.screen.get_rect().h - self.h
-        elif self.y <= 0:
-            self.y = 0
-
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-        self.bar = pygame.Rect(self.x, self.y, self.w, 10)
-        self.exitRect = pygame.Rect(self.x + self.w - 8, self.y + 3, 5, 5)

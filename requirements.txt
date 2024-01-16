@@ -3,3 +3,4 @@ comtypes
 pycaw
 opencv-python
 ffmpeg
+pyperclip
