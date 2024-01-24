@@ -17,14 +17,14 @@ class Python3(window.Window):
 
 
 
-        self.textInput=textbox.textInput(self.stdin.x,self.stdin.y,self.stdin.w,self.stdin.h,self.type)
+        self.textInput=textbox.textInput(self.stdin.x,self.stdin.y,self.stdin.w,self.stdin.h)
 
         self.file=file
         self.directory=directory
 
         self.process = subprocess.Popen(["python3", self.file], cwd=self.directory,stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         self.stdout_list = [b""]
-        self.stdin_list = []
+        self.textInput.values = []
 
         threading.Thread(target=self.stdout_thread).start()
 
@@ -34,13 +34,9 @@ class Python3(window.Window):
 
     def draw(self,screen):
         super().draw(screen)
+        
         pygame.draw.rect(screen,(155,155,155),self.stdout)
         pygame.draw.rect(screen,(155,155,155),self.stdin)
-
-        c=0
-        for text in self.textInput.texts:
-            screen.blit(text,(self.stdin.x,self.stdin.y+10+c))
-            c+=25
 
         c=0
         try:
@@ -50,46 +46,42 @@ class Python3(window.Window):
                     c+=25
         except AttributeError as e: 
             self.mbHeld()
+        self.textInput.draw(self.x+10,self.y+130,self.w-20,80,screen)
+    def onMouseMotion(self, event, mousePos) -> None:
+        if self.textInput.focused:
+            self.textInput.onMouseEvents(event, mousePos)
+    def onMouseButtonUp(self, event, mousePos) -> None:
+        self.textInput.onMouseEvents(event, mousePos)
     def mbHeld(self,mousePos):
         super().mbHeld(mousePos)
-
+        print(self.textInput.startpoint,self.textInput.endpoint)
         self.stdout=pygame.Rect(self.x+10,self.y+20,self.w-20,80)
         self.stdin=pygame.Rect(self.x+10,self.y+130,self.w-20,80)
 
         self.textInput.textbox=pygame.Rect((self.stdin.x,self.stdin.y,self.stdin.w,self.stdin.h))
 
-    def keyPressed(self,event):
-        if event.key != pygame.K_BACKSPACE:
-            self.stdin_list += event.unicode
-            #self.process.stdin.write(event.unicode.encode())
 
-        else:
-            self.stdin_list=self.stdin_list[:-1]
         
     def onReturnPressed(self):
         if self.textInput.focused:
-            self.textInput.value=""
-            self.textInput.values=[""]
-            self.textInput.text = self.textInput.font.render(self.textInput.value, True, (255, 255, 255))
-            self.textInput.texts=[self.textInput.text]
-            for i in self.stdin_list:
-                self.process.stdin.write(i.encode())
+            self.process.stdin.write(self.textInput.values[0].encode())
             self.process.stdin.write(b'\n')
-            self.stdin_list = []
+            self.textInput.clearText()
             try:
                 self.process.stdin.flush()
             except BrokenPipeError as e:
                 pass
+
     def onKeyDown(self, event) -> bool:
         if self.textInput.focused:
             if event.key == pygame.K_RETURN:
                 self.onReturnPressed()
             self.keyPressed(event)
-            self.textInput.update(event, assets.mousePos)
+            self.textInput.onKeyDown(event)
             return 1
         return 0
     def onMouseButtonDown(self, event, mousePos) -> None:
-        self.textInput.update(event, mousePos)
+        self.textInput.onMouseEvents(event, mousePos)
     def onScrollWheel(self, event, mousePos) -> bool:
         if functions.collidePygameRect(self.rect, assets.mousePos):
             scroll_amount = event.y * 10  # Keep the original sign

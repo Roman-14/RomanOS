@@ -4,3 +4,5 @@ pycaw
 opencv-python
 ffmpeg
 pyperclip
+sounddevice
+ffmpeg

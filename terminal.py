@@ -53,36 +53,41 @@ custom="null"
 class Terminal(window.Window):
     def __init__(self,screen) -> None:
         super().__init__(100, 100, 300, 200, screen, "terminal")
-        self.textInput = textbox.textInput(self.x,self.y,self.w,self.h,self.type)
+        self.textInput = textbox.textInput(self.x,self.y,self.w,self.h)
         self.font = pygame.font.Font(None, 16)
         self.toggleResponse=False
         self.responses=[]
         self.directory = os.path.dirname(os.path.abspath(__file__))
         self.scrollOffset=0
         self.history = []
+        self.sorts = ["bubble", "insertion", "merge", "quick", "bogo", "comb", "radix"]
         self.video_extensions = ['.avi', '.mkv', '.mov', '.mp4', '.mpg', '.mpeg', '.wmv', '.flv', '.webm']
         self.audiofiletypes = [".wav",".mp3",".aac",".flac",".ogg",".aiff",".wma",".midi",".amr",".ac3",".m4a",".opus","au"]
         self.textfiletypes=["txt","py","cpp","rb","html","css","js","json","xml","sql","csv","md","java","php","c","h","sh","log","yml","yaml","ini","cfg","bat","tex","svg","scss"]
     def draw(self, screen):
         super().draw(screen)
-        try:
+        self.textInput.draw(self.x,self.y,self.w,self.h,screen)
+        #c=0
+        #for text in self.textInput.texts:
+        #    screen.blit(text,(self.x,self.y+10+c))
+         #   c+=25
+        if len(self.textInput.values)==1 and len(self.textInput.values[self.textInput.cursorpos[1]])==0 and self.toggleResponse:
             c=0
-            for text in self.textInput.texts:
-                screen.blit(text,(self.x,self.y+10+c))
-                c+=25
-            if len(self.textInput.values)==1 and len(self.textInput.value)==0 and self.toggleResponse:
-                c=0
-                for response in self.responses:
-                    screen.subsurface((self.x,self.y+10,self.w,self.h-10)).blit(response,(0,c+10+self.scrollOffset))
-                    c+=15
-        except AttributeError as e:
-            self.mbHeld((100,100))
+            for response in self.responses:
+                screen.subsurface((self.x,self.y+10,self.w,self.h-10)).blit(response,(0,c+10+self.scrollOffset))
+                c+=15
 
     def mbHeld(self,mousePos):
         super().mbHeld(mousePos)
         self.textInput.textbox=pygame.Rect(self.x,self.y,self.w,self.h)
 
-    
+    def onMouseMotion(self, event, mousePos) -> None:
+        if self.textInput.focused:
+            self.textInput.onMouseEvents(event, mousePos)
+    def onMouseButtonUp(self, event, mousePos) -> None:
+        self.textInput.onMouseEvents(event, mousePos)
+
+
     def audio_get_files(self,args):
        # try:
             
@@ -114,7 +119,10 @@ class Terminal(window.Window):
             dm.append(f"Error: {e}")
     def onKeyDown(self, event) -> bool:
         if self.textInput.focused:
-            self.textInput.update(event, assets.mousePos)
+            self.textInput.onKeyDown(event)
+            if event.key == pygame.K_RETURN:
+                self.command(self.textInput.values)
+                self.textInput.clearText()
             return 1
         return 0
     
@@ -131,11 +139,9 @@ class Terminal(window.Window):
             return 1
         return 0
     def onMouseButtonDown(self, event, mousePos) -> bool:
-        self.textInput.update(event, mousePos)
+        self.textInput.onMouseEvents(event, mousePos)
         return functions.collidePygameRect(self.rect,assets.mousePos)
-    def onReturnPressed(self):
-        if self.textInput.focused:
-            self.command(self.textInput.values)
+
     def command(self,values,autostart=""):
         self.scrollOffset=0
         global wallpaper
@@ -143,10 +149,9 @@ class Terminal(window.Window):
         global custom
 
         self.toggleResponse=True
-        self.textInput.value=""
-        self.textInput.values=[self.textInput.value]
-        self.textInput.text=self.textInput.font.render(self.textInput.value, True, (255, 255, 255))
-        self.textInput.texts=[self.textInput.text]
+        #self.textInput.values=[self.textInput.values[self.textInput.cursorpos[1]]]
+        #self.textInput.text=self.textInput.font.render(self.textInput.values[self.textInput.cursorpos[1]], True, (255, 255, 255))
+        #self.textInput.texts=[self.textInput.text]
         self.cmd=""
         for i in "\n".join(values):
             if i != "\n":
@@ -188,6 +193,7 @@ class Terminal(window.Window):
         elif self.cmd == "exit":
             if os.path.isfile("requested_action"):
                 os.remove("requested_action")
+            self.response=["Completed successfully."]
             assets.running=False
         elif self.cmd == "restart" or self.cmd == "reboot" or self.cmd == "r":
             with open('requested_action', 'w') as f: f.write('restart')
@@ -273,7 +279,7 @@ class Terminal(window.Window):
                     self.response=["Invalid directory."]
             else:
                 self.response=["Usage: cd <directory>"]
-        elif len(self.cmd.split())>1 and self.cmd[0:5]=="video":
+        elif len(self.cmd.split())>1 and self.cmd[0:5]=="video": #look at this
             if os.path.isfile(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))):
                 
                 if os.path.splitext(os.path.join(self.directory, " ".join(self.cmd.split()[1:])))[1].lower() in self.video_extensions:
@@ -286,14 +292,14 @@ class Terminal(window.Window):
          
             else:
                 self.response=["Error. You must be in the directory of the video","or the command must specify the location of the", "video in relation to the terminal's location."]
-        elif len(self.cmd.split())>=2 and self.cmd.split()[0]=="image":
+        elif len(self.cmd.split())>=2 and self.cmd.split()[0]=="image": #look at this
             if os.path.isfile(os.path.join(self.directory, " ".join(self.cmd.split()[1:]))):
                 assets.windows.append(imageviewer.ImageViewer(os.path.join(self.directory, " ".join(self.cmd.split()[1:])),self.screen))
                 self.response=["Completed successfully."]
         elif len(self.cmd.split())==2 and self.cmd.split()[0]=="volume":
             functions.set_system_volume(int(self.cmd.split()[1]))
             self.response=["Completed successfully."]
-        elif len(self.cmd.split())>1 and self.cmd[0:5]=="audio" and os.path.exists(self.directory+"/"+" ".join(self.cmd.split()[1:])):
+        elif len(self.cmd.split())>1 and self.cmd[0:5]=="audio" and os.path.exists(self.directory+"/"+" ".join(self.cmd.split()[1:])): #look at this
             temp_playlist = self.audio_get_files(self.cmd[6:])
             
             if temp_playlist != None:
@@ -318,12 +324,14 @@ class Terminal(window.Window):
                 self.response=["Completed successfully."]
             except:
                 self.response=["Error. Invalid file type or file already exists."]
+        #look at this
         elif len(self.cmd.split())>=2 and self.cmd[0:4]=="text":
             if "." in self.cmd and self.cmd.split(".")[-1] in self.textfiletypes and os.path.isfile(self.directory+"/"+" ".join(self.cmd.split()[1:])):
                 assets.windows.append(texteditor.TextEditor(self.directory+"/"+" ".join(self.cmd.split()[1:]),self.screen))
                 self.response=["File opened successfully."]
             else:
                 self.response=["Invalid file or usage of command.","Type 'help' for commands."]
+        #look at this
         elif len(self.cmd.split())==2 and self.cmd[0:7]=="python3":
             if os.path.isfile(self.directory+"/"+self.cmd.split()[1]) and self.cmd[-3:]==".py": 
                 assets.windows.append(python3.Python3(self.directory+"/"+self.cmd.split()[1],self.directory,self.screen))
@@ -338,98 +346,18 @@ class Terminal(window.Window):
         elif self.cmd=="sorts":
             self.response=["The following sorts are:","bubble sort <size> <delay>","insertion sort <size> <delay>",
                            "merge sort <size> <delay>","quick sort <size> <delay>","bogo sort <size> <delay>","cocktail shaker sort <size> <delay>",
-                           "comb sort <size> <delay>",]
-        elif " ".join(self.cmd.split()[0:2]).lower() == "bubble sort":
-            try:
-                sort = sorts.Sort("bubble",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-            
-        elif " ".join(self.cmd.split()[0:2]).lower() == "insertion sort":
-            try:
-                sort = sorts.Sort("insertion",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-        elif " ".join(self.cmd.split()[0:2]).lower() == "merge sort":
-            try:
-                sort = sorts.Sort("merge",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-        elif " ".join(self.cmd.split()[0:2]).lower() == "quick sort":
-            try:
-                sort = sorts.Sort("quick",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-        elif " ".join(self.cmd.split()[0:2]).lower() == "bogo sort":
-            try:
-                sort = sorts.Sort("bogo",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-        elif " ".join(self.cmd.split()[0:2]).lower() == "comb sort":
-            try:
-                sort = sorts.Sort("comb",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-        elif " ".join(self.cmd.split()[0:3]).lower() == "cocktail shaker sort":
-            try:
-                sort = sorts.Sort("cocktail",self.screen,int(self.cmd.split()[3]),float(self.cmd.split()[4]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
-                self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."] 
-        elif " ".join(self.cmd.split()[0:2]).lower() == "radix sort":
-            try:
-                sort = sorts.Sort("radix",self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3]))
-                if sort.type!="None":
-                    assets.windows.append(sort)
-                    self.response=["Completed successfully."]
-                else:
-                    self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
-                
-            except:
+                           "comb sort <size> <delay>","radix sort <size> <delay>"]
+        elif len(self.cmd.split()) >= 4 and (self.cmd.split()[0].lower() in self.sorts and self.cmd.split()[1].lower() == "sort") or " ".join(self.cmd.split()[:3])=="cocktail shaker sort":
+            if (self.cmd.split()[2].isdigit() and 0<int(self.cmd.split()[2])<=380):
+                assets.windows.append(sorts.Sort(self.cmd.split()[0],self.screen,int(self.cmd.split()[2]),float(self.cmd.split()[3])))
+                self.response=["Completed successfully."]
+            elif (self.cmd.split()[3].isdigit() and 0<int(self.cmd.split()[3])<=380 and " ".join(self.cmd.split()[:3])=="cocktail shaker sort"):
+                assets.windows.append(sorts.Sort(self.cmd.split()[0],self.screen,int(self.cmd.split()[3]),float(self.cmd.split()[4])))
+                self.response=["Completed successfully."]
+            else:
                 self.response=["Error.", "Make sure you entered the size as a whole number","and the size is smaller than 380."]
         elif self.cmd.lower()=="3d":
-            self.response=["Here are the following commands for 3D experiments:","cube","triangular prism"]
+            self.response=["Here are the following commands for 3D experiments:","cube","pyramid"]
         elif self.cmd.lower() == "cube":
             assets.windows.append(threeDimensional.ThreeDimensional("cube",self.screen))
             self.response=["Completed successfully."]

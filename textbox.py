@@ -7,123 +7,38 @@ import assets
 pygame.init()
 
 class textInput:
-    def __init__(self,x,y,w,h,type,history=[],fontsize="default"):
+    def __init__(self,x,y,w,h, lines = None, textColour = (255, 255, 255)):
         self.x=x
         self.y=y
         self.w=w
         self.h=h
-
-        self.type = type
-        self.history=history
-        self.historypos=0
-
-        self.value=""
-        self.values=[self.value]
-        self.textbox=pygame.Rect(self.x,self.y,self.w,self.h)
-        if fontsize == "default":
-            self.font = assets.Defaultfont
-        else:
-            self.font = pygame.font.Font(None, fontsize)
-        self.text = self.font.render(self.value, True, (255, 255, 255))
-        self.texts=[self.text]
-        self.focused=False
-    def update(self,event=pygame.event,mouse=pygame.mouse):
-        if event.type==pygame.MOUSEBUTTONDOWN:
-            if event.button==1:
-                if functions.collidePygameRect(self.textbox,mouse):
-                    self.focused=True
-                else:
-                    self.focused=False
-        if self.focused:
-            if event.type == pygame.KEYDOWN:
-                if sum([text.get_rect().h for text in self.texts])+20>self.textbox.h and event.key!=pygame.K_BACKSPACE and event.key!=pygame.K_RETURN:
-                    return
-                if event.key==pygame.K_UP and self.type=="terminal" and len(self.history)>abs(self.historypos):
-                    self.historypos-=1
-                    self.values=self.history[self.historypos]
-                    self.value=self.values[-1]
-                    self.text=self.font.render(self.value, True, (255, 255, 255))
-                    temptexts=[]
-                    for value in self.values:
-                        temptexts.append(self.font.render(value, True, (255, 255, 255)))
-                    self.texts=temptexts
-                elif event.key==pygame.K_DOWN and self.type=="terminal" and self.historypos!=-1:
-                    self.historypos+=1
-                    self.values=self.history[self.historypos]
-                    self.value=self.values[-1]
-                    self.text=self.font.render(self.value, True, (255, 255, 255))
-                    temptexts=[]
-                    for value in self.values:
-                        temptexts.append(self.font.render(value, True, (255, 255, 255)))
-                    self.texts=temptexts
-                elif event.key==pygame.K_RETURN and self.type=="terminal":
-                    self.historypos=0
-                elif event.key==pygame.K_BACKSPACE:
-                    
-                    if len(self.value)==0 and len(self.values) > 1:
-                        self.values.pop()
-                        self.texts.pop()
-                        self.value = self.values[-1]
-                        self.text = self.texts[-1]
-                        
-
-                        temptexts=[]
-                        for value in self.values:
-                            temptexts.append(self.font.render(value, True, (255, 255, 255)))
-                        self.texts=temptexts
-                    self.value=self.value[:-1]
-
-                elif event.key!=pygame.K_RETURN:
-                    self.value+=event.unicode
-
-            self.text=self.font.render(self.value, True, (255, 255, 255))
-            self.values[-1]=self.value
-            self.texts[-1]=self.text
-            
-            if self.text.get_rect().w+15>self.textbox.w:
-                self.texts.append(self.text)
-                self.values.append(self.value)
-                self.value=""
-                self.text=self.font.render(self.value, True, (255, 255, 255))
-                self.values[-1]=self.value
-                self.texts[-1]=self.text
-            
-class textInputNotepad:
-    def __init__(self,x,y,w,h,file):
-        self.x=x
-        self.y=y
-        self.w=w
-        self.h=h
+        self.rect = pygame.Rect(self.x,self.y,self.w,self.h)
         self.scrollOffset=0
         self.cursorpos=[0,0]
         
         self.values=[""]
         self.textbox=pygame.Rect(self.x,self.y,self.w,self.h)
+        self.textColour = textColour
         self.font = assets.Defaultfont
-        self.text = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+        self.text = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
         self.texts=[self.text]
         self.focused=False
-
         
 
         self.valuebeforecursor=""
-        self.textbeforecursor=self.font.render(self.valuebeforecursor,True,(255,255,255))
+        self.textbeforecursor=self.font.render(self.valuebeforecursor,True,self.textColour)
         self.saved=True
-        self.file=file
 
-
-        self.open_file = open(file,"r")
         self.values=[]
         self.texts=[]
-        for i in self.open_file:
-            self.values.append(i.replace("\n",""))
-            self.texts.append(self.font.render(i.replace("\n",""), True, (0, 0, 0)))
-        
-        self.open_file.close()
+        if lines != None:
+            for i in lines:
+                self.values.append(i.replace("\n",""))
+                self.texts.append(self.font.render(i.replace("\n",""), True, self.textColour))
 
         if self.values==[]:
             self.values=[""]
-            self.text = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+            self.text = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
             self.texts=[self.text]
 
         self.selecting = False
@@ -141,7 +56,7 @@ class textInputNotepad:
         prev_dist = 1000000
 
         for index in range(len(self.values[cursorY]) + 1):
-            text_rect = self.font.render(self.values[cursorY][:index], True, (255, 255, 255)).get_rect()
+            text_rect = self.font.render(self.values[cursorY][:index], True, self.textColour).get_rect()
 
             dist = self.x + text_rect.w - x
             if dist > 0:
@@ -185,8 +100,8 @@ class textInputNotepad:
 
         # Insert the pasted text at the cursor position
         self.values[self.cursorpos[1]] = beforeCursor + value + afterCursor
-        self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
-        self.text = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+        self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
+        self.text = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
 
         # Update cursor position and selection
         self.cursorpos[0] += len(value)
@@ -201,9 +116,18 @@ class textInputNotepad:
         self.values = temp_values
 
         for i in range(len(self.values)):
-            temp_texts.append(self.font.render(self.values[i], True, (0, 0, 0)))
+            temp_texts.append(self.font.render(self.values[i], True, self.textColour))
         self.texts = temp_texts
-
+    def clearText(self):
+        self.startpoint=[0,0]
+        self.endpoint=[0,0]
+        self.values=[""]
+        if self.cursorpos[1] > len(self.values) - 1:
+            self.cursorpos[1] = len(self.values) - 1
+        if self.cursorpos[0] > len(self.values[self.cursorpos[1]]):
+            self.cursorpos[0] = len(self.values[self.cursorpos[1]])
+        self.text = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
+        self.texts=[self.text]
     def removeSelection(self):
         if self.startpoint[1]>self.endpoint[1] or (self.startpoint[1]==self.endpoint[1] and self.startpoint[0]>self.endpoint[0]):
             startPos = self.endpoint
@@ -219,27 +143,85 @@ class textInputNotepad:
             self.values = self.values[:startPos[1]]+[beg+end]+self.values[endPos[1]+1:]
         else:
             self.values[endPos[1]]=self.values[endPos[1]][:startPos[0]]+self.values[endPos[1]][endPos[0]:]
-        
-        self.endpoint = self.startpoint = self.cursorpos = startPos
-        self.texts = self.texts[:startPos[1]] + [self.font.render(self.values[startPos[1]], True, (0, 0, 0))] + self.texts[endPos[1]+1:]
-    def update(self,event=pygame.event,mouse=pygame.mouse) -> None:
-                if event.type==pygame.MOUSEBUTTONDOWN:
-                    if event.button==1:
-                        if functions.collidePygameRect(self.textbox,mouse):
-                            self.focused=True
 
-                        else:
-                            self.focused=False
+        self.endpoint = self.startpoint = self.cursorpos = startPos
+        self.texts = self.texts[:startPos[1]] + [self.font.render(self.values[startPos[1]], True, self.textColour)] + self.texts[endPos[1]+1:]
+
+    def onMouseEvents(self,event,mousePos):
+        if event.type==pygame.MOUSEBUTTONDOWN:
+            if event.button==1:
+                if functions.collidePygameRect(self.textbox,mousePos):
+                    self.focused=True
+
+                else:
+                    self.focused=False
+        if event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
+            self.cursorpos = self.getTextPosFromCoord(mousePos[0],mousePos[1])
+            self.valuebeforecursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
+            self.textbeforecursor = self.font.render(self.valuebeforecursor, True, self.textColour)
+            self.startpoint = self.cursorpos
+            self.selecting = True
+            self.endpoint = self.startpoint
+        elif self.selecting and event.type == pygame.MOUSEMOTION:
+            self.endpoint=self.getTextPosFromCoord(mousePos[0],mousePos[1])
+
+        elif pygame.MOUSEBUTTONUP:
+            self.selecting = False
+    
+    def draw(self, x, y, w, h, screen):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        
+        if self.startpoint[1]>self.endpoint[1] or (self.startpoint[1]==self.endpoint[1] and self.startpoint[0]>self.endpoint[0]):
+            startPos = self.endpoint
+            endPos = self.startpoint
+        else:
+            startPos = self.startpoint
+            endPos = self.endpoint
+        
+        if startPos[1]==endPos[1]:
+            selectPos = self.font.render(self.values[startPos[1]][startPos[0]:endPos[0]],True,(255,255,255)).get_rect()
+
+            acquireX = self.font.render(self.values[startPos[1]][:startPos[0]],True,(255,255,255)).get_rect()
+
+            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(acquireX.w,25*startPos[1]+10+self.scrollOffset,selectPos.w,25))
+            
+        else:
+            selectPos = self.font.render(self.values[startPos[1]][startPos[0]:],True,(255,255,255)).get_rect()
+
+            acquireX = self.font.render(self.values[startPos[1]][:startPos[0]],True,(255,255,255)).get_rect()
+
+            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(acquireX.w,25*startPos[1]+10+self.scrollOffset,selectPos.w,25))
+            for i in range(startPos[1]+1,endPos[1]):
+                selectPos = self.texts[i].get_rect()
+                pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(0,25*i+10+self.scrollOffset,selectPos.w,25))
+            
+            selectPos = self.font.render(self.values[endPos[1]][:endPos[0]],True,(255,255,255)).get_rect()
+            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(0,25*endPos[1]+10+self.scrollOffset,selectPos.w,25))
+        
+        
+
+        c=0
+        for text in self.texts:
+
+            screen.subsurface((self.x,self.y+10,self.w,self.h-10)).blit(text,(0,c+self.scrollOffset))
+            #screen.blit(text,(self.x,self.y+10+c))
+            c+=25
+
+        pygame.draw.rect(screen.subsurface(self.rect),(0,0,0),pygame.Rect(self.textbeforecursor.get_rect().w,self.scrollOffset+10+25*(self.cursorpos[1]),2,self.textbeforecursor.get_rect().h))
+
+    def onKeyDown(self, event) -> bool:
+                hasChanged = False
                 if self.focused:
                     if event.type == pygame.KEYDOWN:
                         redraw = False
                         if event.key == pygame.K_s and event.mod & pygame.KMOD_CTRL:
-                            id=random.randint(1000,10000)
-                            newfile=open(self.file,"w")
-                            for value in self.values:
-                                newfile.write(value+"\n")
-                            newfile.close()
-                            self.saved=True
+                            pass
+                        elif event.key == pygame.K_CAPSLOCK:
+                            pass
                         elif event.key == pygame.K_c and event.mod & pygame.KMOD_CTRL:
                             pyperclip.copy(self.getSelection())
                         elif event.key == pygame.K_v and event.mod & pygame.KMOD_CTRL:
@@ -266,20 +248,20 @@ class textInputNotepad:
                             beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
                             afterCursor = self.values[self.cursorpos[1]][self.cursorpos[0]:]
                             self.values[self.cursorpos[1]]=beforeCursor
-                            self.texts[self.cursorpos[1]]=self.font.render(beforeCursor, True, (0, 0, 0))
+                            self.texts[self.cursorpos[1]]=self.font.render(beforeCursor, True, self.textColour)
                             self.cursorpos[1]+=1
                             self.values.insert(self.cursorpos[1],afterCursor)
-                            self.texts.insert(self.cursorpos[1], self.font.render(afterCursor, True, (0, 0, 0)))
+                            self.texts.insert(self.cursorpos[1], self.font.render(afterCursor, True, self.textColour))
                             redraw = True
                             self.cursorpos[0]=0
-                            self.saved = False
+                            hasChanged = True
                         elif event.key == pygame.K_BACKSPACE:
                             beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
                             afterCursor = self.values[self.cursorpos[1]][self.cursorpos[0]:]
-                            self.saved=False
+                            hasChanged = True
                             if self.cursorpos[0]!=0:
                                 self.values[self.cursorpos[1]]=beforeCursor[:-1]+afterCursor
-                                self.texts[self.cursorpos[1]]=self.font.render(beforeCursor[:-1]+afterCursor, True, (0, 0, 0))
+                                self.texts[self.cursorpos[1]]=self.font.render(beforeCursor[:-1]+afterCursor, True, self.textColour)
                                 self.cursorpos[0]-=1
                             else:
                                 if self.cursorpos!=[0,0]:
@@ -288,7 +270,7 @@ class textInputNotepad:
                                     self.texts.pop(self.cursorpos[1])
                                     
                                     self.values[self.cursorpos[1]-1]+=afterCursor
-                                    self.texts[self.cursorpos[1]-1]=self.font.render(self.values[self.cursorpos[1]-1], True, (0, 0, 0))
+                                    self.texts[self.cursorpos[1]-1]=self.font.render(self.values[self.cursorpos[1]-1], True, self.textColour)
                                     self.cursorpos[0]=len(self.values[self.cursorpos[1]-1])-len(afterCursor)
                                     self.cursorpos[1]-=1
                                     
@@ -298,23 +280,23 @@ class textInputNotepad:
 
                             redraw = True
                         elif event.key == pygame.K_TAB:
-                            self.saved = False
+                            hasChanged = True
                             beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
                             afterCursor = self.values[self.cursorpos[1]][self.cursorpos[0]:]
                             self.cursorpos[0]+= 4
                             self.values[self.cursorpos[1]] = beforeCursor + "    " + afterCursor
-                            self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
-                            self.text=self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+                            self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
+                            self.text=self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
                             redraw = True
                         elif event.key!=pygame.K_LCTRL:
-                            self.saved=False
+                            hasChanged = True
                             self.removeSelection()
                             beforeCursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
                             afterCursor = self.values[self.cursorpos[1]][self.cursorpos[0]:]
                             self.cursorpos[0]+= len(event.unicode)
                             self.values[self.cursorpos[1]] = beforeCursor + event.unicode + afterCursor
-                            self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
-                            self.text=self.font.render(self.values[self.cursorpos[1]], True, (0, 0, 0))
+                            self.texts[self.cursorpos[1]] = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
+                            self.text=self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
                             
                             
                             
@@ -322,18 +304,6 @@ class textInputNotepad:
 
                         if redraw:
                             self.valuebeforecursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
-                            self.textbeforecursor = self.font.render(
-                                self.valuebeforecursor, True, (255, 255, 255))
-                    if event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
-                        self.cursorpos = self.getTextPosFromCoord(mouse[0],mouse[1])
-                        self.valuebeforecursor = self.values[self.cursorpos[1]][:self.cursorpos[0]]
-                        self.textbeforecursor = self.font.render(self.valuebeforecursor, True, (255, 255, 255))
-                        self.startpoint = self.cursorpos
-                        self.selecting = True
-                        self.endpoint = self.startpoint
-                    elif self.selecting and event.type == pygame.MOUSEMOTION:
-                        
-                        self.endpoint=self.getTextPosFromCoord(mouse[0],mouse[1])
-                    elif pygame.MOUSEBUTTONUP:
-                        self.selecting = False
-                      
+                            self.textbeforecursor = self.font.render(self.valuebeforecursor, True, self.textColour)
+            
+                return hasChanged

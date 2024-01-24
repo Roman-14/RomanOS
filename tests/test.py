@@ -1,6 +1,3 @@
-def mergeList(a,b):
-    return a+b
-list1 = [1,2,3]
-list2 = [4,5,6]
-print(mergeList(list1, list2))
-print(input("Enter text:"))
+print("Hello World!")
+#Print and input
+print(input("Go on: "))

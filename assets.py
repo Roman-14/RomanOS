@@ -84,7 +84,7 @@ Bright = pygame.transform.scale(Bright, (width, height))
 car = pygame.image.load('assets/car')
 car = pygame.transform.scale(car, (width, height))
 
-car2 = pygame.image.load('assets/Car')
+car2 = pygame.image.load('assets/car2')
 car2 = pygame.transform.scale(car2, (width, height))
 
 castle = pygame.image.load('assets/castle')

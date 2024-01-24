@@ -4,7 +4,7 @@ import random
 import assets
 import window
 
-class TicTacToe2:
+class TicTacToeAI:
     def __init__(self):
         self.board = [
             [" ", " ", " "],
@@ -79,10 +79,8 @@ class TicTacToe2:
 
 
 class TicTacToe(window.Window):
-    def __init__(self,screen) -> None:
-        super().__init__(100, 100, 360, 240, screen, "TicTacToe", (20, 189, 172))
-
-        self.scrollOffset=0
+    def __init__(self,screen,x=100,y=100) -> None:
+        super().__init__(x, y, 360, 240, screen, "TicTacToe", (20, 189, 172))
 
         self.font = assets.Defaultfont
 
@@ -119,7 +117,7 @@ class TicTacToe(window.Window):
         self.youlose=self.font.render("You lose...", True, (13, 161, 146))
         self.drawtext=self.font.render("Draw", True, (13, 161, 146))
 
-        self.game = TicTacToe2()   
+        self.game = TicTacToeAI()   
 
     def drawStart(self,screen) -> None:
         pygame.draw.rect(screen,(13, 161, 146),self.easyrect)
@@ -206,7 +204,6 @@ class TicTacToe(window.Window):
                 screen.blit(self.drawtext,(self.x+self.w/2-20,self.y+self.h-30))
     def mbHeld(self,mousePos):
         super().mbHeld(mousePos)
-
         self.easyrect = pygame.Rect(self.x+self.w*0.5-50,self.y+self.h*0.3-20,100,40)
         self.mediumrect = pygame.Rect(self.x+self.w*0.5-50,self.y+self.h*0.5-20,100,40)
         self.hardrect =  pygame.Rect(self.x+self.w*0.5-50,self.y+self.h*0.7-20,100,40)
@@ -247,64 +244,65 @@ class TicTacToe(window.Window):
                     i,j=self.game.get_available_moves()[random.randint(0,len(self.game.get_available_moves())-1)]
                     self.game.board[i][j] = "O"
 
-    def update(self,mouse):
+    def update(self,mousePos):
           
         if self.phase == 2 and self.game.is_board_full()==False:
             
             try:
-                if self.game.board[0][0] == " " and functions.collidePygameRect(self.a1,mouse):
+                if self.game.board[0][0] == " " and functions.collidePygameRect(self.a1,mousePos):
                     self.game.board[0][0]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[0][1] == " " and functions.collidePygameRect(self.b1,mouse):
+                elif self.game.board[0][1] == " " and functions.collidePygameRect(self.b1,mousePos):
                     self.game.board[0][1]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[0][2] == " " and functions.collidePygameRect(self.c1,mouse):
+                elif self.game.board[0][2] == " " and functions.collidePygameRect(self.c1,mousePos):
                     self.game.board[0][2]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[1][0] == " " and functions.collidePygameRect(self.a2,mouse):
+                elif self.game.board[1][0] == " " and functions.collidePygameRect(self.a2,mousePos):
                     self.game.board[1][0]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[1][1] == " " and functions.collidePygameRect(self.b2,mouse):
+                elif self.game.board[1][1] == " " and functions.collidePygameRect(self.b2,mousePos):
                     self.game.board[1][1]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[1][2] == " " and functions.collidePygameRect(self.c2,mouse):
+                elif self.game.board[1][2] == " " and functions.collidePygameRect(self.c2,mousePos):
                     self.game.board[1][2]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[2][0] == " " and functions.collidePygameRect(self.a3,mouse):
+                elif self.game.board[2][0] == " " and functions.collidePygameRect(self.a3,mousePos):
                     self.game.board[2][0]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[2][1] == " " and functions.collidePygameRect(self.b3,mouse):
+                elif self.game.board[2][1] == " " and functions.collidePygameRect(self.b3,mousePos):
                     self.game.board[2][1]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
-                elif self.game.board[2][2] == " " and functions.collidePygameRect(self.c3,mouse):
+                elif self.game.board[2][2] == " " and functions.collidePygameRect(self.c3,mousePos):
                     self.game.board[2][2]="X"
                     if not self.game.is_winner("X"):
                         self.doNextMove()
             except:
+                print("Exception occured in tic tac toe")
                 pass
 
         if self.phase == 1:
-            if functions.collidePygameRect(self.easyrect,mouse):
+            if functions.collidePygameRect(self.easyrect,mousePos):
                 self.phase=2
                 self.difficulty = "easy"
-            if functions.collidePygameRect(self.mediumrect,mouse):
+            if functions.collidePygameRect(self.mediumrect,mousePos):
                 self.phase=2
                 self.difficulty = "medium"
-            if functions.collidePygameRect(self.hardrect,mouse):
+            if functions.collidePygameRect(self.hardrect,mousePos):
                 self.phase=2
                 self.difficulty = "hard"
         
-        if self.blityouwin or self.blitdraw or self.blityoulose:
-            self.__init__(self.screen)
+        if (self.blityouwin or self.blitdraw or self.blityoulose) and functions.collidePygameRect(self.rect, mousePos):
+            self.__init__(self.screen, self.x, self.y)
     
     def onMouseButtonDown(self, event, mousePos) -> None:
         self.update(mousePos)
-        return 1
+        return functions.collidePygameRect(self.rect, mousePos)

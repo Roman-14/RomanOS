@@ -18,3 +18,10 @@
 (2, 0)|test.py|code|python3 tests/test.py
 (0, 19)|Restart|restart|r
 (2, 1)|test.py editor|code|text tests/test.py
+(2, 2)|Radix sort|barchart|radix sort 380 0.02
+(2, 3)|Merge sort|barchart|merge sort 200 0.02
+(3, 0)|Comb sort|barchart|comb sort 380 0.01
+(3, 1)|Quick sort|barchart|quick sort 380 0.01
+(3, 2)|Insertion sort|barchart|insertion sort 380 0.005
+(3, 3)|Cocktail shaker sort|barchart|cocktail shaker sort 380 0.001
+(4, 0)|Image|warning|image assets/car

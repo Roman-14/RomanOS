@@ -1,7 +1,7 @@
 """
 To do:
 -when making an audio and video window and then restarting, the restart doesn't work
-- multiple instances of tic tac toe window causes weird problems
+- errors on python3 window stops the entire program
 - make restarting work during audio and video
 - allow the moving, creation (for txt) and deletion of files
 - add a horizontal scroll bar on text editor
@@ -13,7 +13,6 @@ To do:
 - make a flash cards app
 - more games such as minesweeper
 - plant growing app
-- 3D spinning stuff
 - completely erradicate errors when typing invalid commands
 - text editor selection stuff and cursor doesnt have a focus system
 """
@@ -112,9 +111,9 @@ while assets.running:
             if event.type==pygame.KEYDOWN:
                 if window.type == "terminal" and window.textInput.focused:
                     window.toggleResponse = False
-                if event.key == pygame.K_RETURN:
-                    window.onReturnPressed()
-                elif window.onKeyDown(event):
+                #if event.key == pygame.K_RETURN:
+                #    window.onReturnPressed()
+                if window.onKeyDown(event):
                     break
                 
             elif event.type == pygame.MOUSEMOTION:
@@ -126,7 +125,7 @@ while assets.running:
                     if functions.collidePygameRect(window.exitRect,assets.mousePos):
                         window.onExitRectPressed()           
                         assets.windows.remove(window)
-                    elif functions.collidePygameRect(window.bar,assets.mousePos) and not functions.collidePygameRect(window.exitRect,assets.mousePos):
+                    elif functions.collidePygameRect(window.bar,assets.mousePos):
                         assets.clicked_window=window
                         assets.heldtoggle=[True,window]
                     if window.onButtonPress(assets.mousePos):
@@ -178,10 +177,8 @@ while assets.running:
     clock.tick(fps)
 
 for window in assets.windows:
-    if window.type=="VideoPlayer" or window.type=="AudioPlayer":
-        window.audioplayer.stop_playback()
-    elif window.type == "Sort":
-        window.running=False
+    window.onExitRectPressed()
+
 
 if not (os.path.exists("data/shortcuts.txt")):
     with open("data/shortcuts.txt","x") as file:
