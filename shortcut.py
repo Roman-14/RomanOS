@@ -50,8 +50,8 @@ class Shortcut(window.Window):
         self.nameRect = pygame.Rect(self.x+30,self.y+80,300,50)
         self.commandRect = pygame.Rect(self.x+30,self.y+240,300,50)
 
-        self.nameInput = textbox.textInput(self.nameRect.x,self.nameRect.y,self.nameRect.w,self.nameRect.h,self.type,fontsize=30)
-        self.commandInput = textbox.textInput(self.commandRect.x,self.commandRect.y,self.commandRect.w,self.commandRect.h,self.type,fontsize=20)
+        self.nameInput = textbox.textInput(self.nameRect.x,self.nameRect.y,self.nameRect.w,self.nameRect.h,fontsize=30)
+        self.commandInput = textbox.textInput(self.commandRect.x,self.commandRect.y,self.commandRect.w,self.commandRect.h,fontsize=20)
 
         self.submit_text = assets.Defaultfont.render("Submit", True, (0, 0, 0))
         self.submit_rect = pygame.Rect(self.x+int(self.w/2)-50,self.y+self.h-50,100,25)
@@ -79,18 +79,10 @@ class Shortcut(window.Window):
 
         screen.blit(self.addText,(self.x+35,self.y+150))
 
-        c=0
-        for text in self.nameInput.texts:
-            screen.blit(text,(self.nameRect.x,self.nameRect.y+10+c))
-            c+=25
 
-        c=0
-        for text in self.commandInput.texts:
-            screen.blit(text,(self.commandRect.x,self.commandRect.y+10+c))
-            c+=25
-            
-        #if self.iconMenu != None:
-        #    self.iconMenu.draw(screen)
+        self.nameInput.draw(self.x+30,self.y+80,300,50,screen)
+        self.commandInput.draw(self.x+30,self.y+240,300,50,screen)
+
     def mbHeld(self,mousePos):
         super().mbHeld(mousePos)
         self.addRect = pygame.Rect(self.x+30,self.y+155,35,35)
@@ -108,15 +100,25 @@ class Shortcut(window.Window):
         assets.windows.remove(self)
     def onKeyDown(self, event) -> bool:
         if self.nameInput.focused:
-            self.nameInput.update(event, assets.mousePos)
+            self.nameInput.onKeyDown(event)
             return 1
         elif self.commandInput.focused:
-            self.commandInput.update(event, assets.mousePos)
+            self.commandInput.onKeyDown(event)
             return 1
         return 0
+    
+    def onMouseMotion(self, event, mousePos) -> None:
+        if self.nameInput.focused:
+            self.nameInput.onMouseEvents(event, mousePos)
+        elif self.commandInput.focused:
+            self.commandInput.onMouseEvents(event, mousePos)
+    def onMouseButtonUp(self, event, mousePos) -> None:
+        self.nameInput.onMouseEvents(event, mousePos)
+        self.commandInput.onMouseEvents(event, mousePos)
+
     def onMouseButtonDown(self, event, mousePos) -> bool:
-        self.nameInput.update(event, mousePos)
-        self.commandInput.update(event, mousePos)
+        self.nameInput.onMouseEvents(event, mousePos)
+        self.commandInput.onMouseEvents(event, mousePos)
         if functions.collidePygameRect(self.addRect,assets.mousePos):
             self.addRectClicked()
             return 1

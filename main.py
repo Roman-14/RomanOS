@@ -1,6 +1,8 @@
 """
 To do:
--when making an audio and video window and then restarting, the restart doesn't work
+- when making an audio and video window and then restarting, the restart doesn't work
+- icons menu pictures overlap with shortcut buttons when both positions are lined up with the mouse
+- multiple icon menus can be made simultaneously 
 - errors on python3 window stops the entire program
 - make restarting work during audio and video
 - allow the moving, creation (for txt) and deletion of files

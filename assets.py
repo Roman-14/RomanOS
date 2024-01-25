@@ -15,9 +15,11 @@ clicked_window = None
 rightClickCode = 3
 leftClickCode = 1
 
+Defaultfont = pygame.font.Font(None, 32)
+
 screen_info = pygame.display.Info()
 width,height = (screen_info.current_w, screen_info.current_h)
-screen = pygame.display.set_mode((width, height),pygame.FULLSCREEN)
+
 mousePos = pygame.mouse.get_pos()
 if width >=1920:
     iconX=30
@@ -45,8 +47,6 @@ else:
 tilesOffset = {}
 for i in tiles:
     tilesOffset[i]=0
-
-Defaultfont = pygame.font.Font(None, 32)
 
 background = pygame.image.load('assets/Background')
 background = pygame.transform.scale(background, (width, height))
@@ -156,3 +156,5 @@ restartImg = pygame.image.load('assets/restart')
 restartImg = pygame.transform.scale(restartImg, (width/iconX, height/iconY))
 
 icons = {"terminal" : terminalImg, "shape" : shapeImg, "warning" : warningImg, "gear" : gearImg, "barchart" : barchartImg, "code" : codeImg, "music" : musicImg, "game" : gameImg, "video" : videoImg, "restart" : restartImg}
+
+screen = pygame.display.set_mode((width, height),pygame.FULLSCREEN)

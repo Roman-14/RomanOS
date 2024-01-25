@@ -4,10 +4,12 @@ import math
 import random
 import pyperclip
 import assets
+import bisect
+
 pygame.init()
 
 class textInput:
-    def __init__(self,x,y,w,h, lines = None, textColour = (255, 255, 255)):
+    def __init__(self,x,y,w,h, lines = None, textColour = (255, 255, 255),fontsize = 32):
         self.x=x
         self.y=y
         self.w=w
@@ -19,7 +21,7 @@ class textInput:
         self.values=[""]
         self.textbox=pygame.Rect(self.x,self.y,self.w,self.h)
         self.textColour = textColour
-        self.font = assets.Defaultfont
+        self.font = pygame.font.Font(None, fontsize)
         self.text = self.font.render(self.values[self.cursorpos[1]], True, self.textColour)
         self.texts=[self.text]
         self.focused=False
@@ -49,14 +51,14 @@ class textInput:
         cursorX = cursorY = 0
 
         line_index = round((y - self.y - self.scrollOffset-10)/25)
-        cursorY = min(len(self.values) - 1, max(0, line_index))
+        cursorY = min(len(self.split_values) - 1, max(0, line_index))
         if self.cursorpos[1]<0:
             cursorY = 0
 
         prev_dist = 1000000
 
-        for index in range(len(self.values[cursorY]) + 1):
-            text_rect = self.font.render(self.values[cursorY][:index], True, self.textColour).get_rect()
+        for index in range(len(self.split_values[cursorY]) + 1):
+            text_rect = self.font.render(self.split_values[cursorY][:index], True, self.textColour).get_rect()
 
             dist = self.x + text_rect.w - x
             if dist > 0:
@@ -70,10 +72,19 @@ class textInput:
             prev_dist = dist
 
         else:
-            cursorX = len(self.values[cursorY])
+            cursorX = len(self.split_values[cursorY])
 
-        return [cursorX, cursorY]
+        y = 0
+        buildup = ""
+        for i in range(cursorY):
+            buildup += self.split_values[i]
+        if len(buildup) >= len(self.values[y]):
+            buildup = ""
+            y += 1
 
+        x = len(buildup) + cursorX
+        return [x, y]
+    
     def getSelection(self):
         if self.startpoint[1]>self.endpoint[1] or (self.startpoint[1]==self.endpoint[1] and self.startpoint[0]>self.endpoint[0]):
             startPos = self.endpoint
@@ -174,45 +185,71 @@ class textInput:
         self.w = w
         self.h = h
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+
+        self.split_values = []
+        self.split_texts = []
+        split_textbeforecursor = self.textbeforecursor
+        split_cursorpos = self.cursorpos
+        split_startpos = self.startpoint
+        split_endpos = self.endpoint
+        for y, (line, text) in enumerate(zip(self.values, self.texts)):
+            if text.get_rect().w > self.w:
+                last_index = 0
+                while last_index < len(line):
+                    i = bisect.bisect(range(len(line)), self.w, lo=last_index, key=lambda i: self.font.size(line[last_index:i])[0])
+                    self.split_values += [line[last_index:i]]
+                    self.split_texts += [self.font.render(line[last_index:i],True,self.textColour)]
+
+                    if self.cursorpos[1] == y and last_index <= self.cursorpos[0] < i:
+                        split_cursorpos = [self.cursorpos[0] - last_index, len(self.split_values)-1]
+                        split_textbeforecursor = self.font.render(line[last_index:last_index + split_cursorpos[0]],True,self.textColour)
+                    if self.startpoint[1] == y and last_index <= self.startpoint[0] < i:
+                        split_startpos = [self.startpoint[0] - last_index, len(self.split_values)-1]
+                    if self.endpoint[1] == y and last_index <= self.endpoint[0] < i:
+                        split_endpos = [self.endpoint[0] - last_index, len(self.split_values)-1]
+
+                    last_index = i
+
+            else:
+                self.split_values += [line]
+                self.split_texts += [text]
         
-        if self.startpoint[1]>self.endpoint[1] or (self.startpoint[1]==self.endpoint[1] and self.startpoint[0]>self.endpoint[0]):
-            startPos = self.endpoint
-            endPos = self.startpoint
+        if split_startpos[1]>split_endpos[1] or (split_startpos[1]==split_endpos[1] and split_startpos[0]>split_endpos[0]):
+            startPos = split_endpos
+            endPos = split_startpos
         else:
-            startPos = self.startpoint
-            endPos = self.endpoint
+            startPos = split_startpos
+            endPos = split_endpos
         
+
         if startPos[1]==endPos[1]:
-            selectPos = self.font.render(self.values[startPos[1]][startPos[0]:endPos[0]],True,(255,255,255)).get_rect()
+            selectPos = self.font.size(self.split_values[startPos[1]][startPos[0]:endPos[0]])
+            acquireX = self.font.size(self.split_values[startPos[1]][:startPos[0]])
 
-            acquireX = self.font.render(self.values[startPos[1]][:startPos[0]],True,(255,255,255)).get_rect()
-
-            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(acquireX.w,25*startPos[1]+10+self.scrollOffset,selectPos.w,25))
+            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(acquireX[0],25*startPos[1]+10+self.scrollOffset,selectPos[0],25))
             
         else:
-            selectPos = self.font.render(self.values[startPos[1]][startPos[0]:],True,(255,255,255)).get_rect()
+            selectPos = self.font.size(self.split_values[startPos[1]][startPos[0]:])
+            acquireX = self.font.size(self.split_values[startPos[1]][:startPos[0]])
 
-            acquireX = self.font.render(self.values[startPos[1]][:startPos[0]],True,(255,255,255)).get_rect()
-
-            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(acquireX.w,25*startPos[1]+10+self.scrollOffset,selectPos.w,25))
+            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(acquireX[0],25*startPos[1]+10+self.scrollOffset,selectPos[0],25))
             for i in range(startPos[1]+1,endPos[1]):
-                selectPos = self.texts[i].get_rect()
-                pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(0,25*i+10+self.scrollOffset,selectPos.w,25))
-            
-            selectPos = self.font.render(self.values[endPos[1]][:endPos[0]],True,(255,255,255)).get_rect()
-            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(0,25*endPos[1]+10+self.scrollOffset,selectPos.w,25))
+                selectPos = self.split_texts[i].get_rect()
+                pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(0,25*i+10+self.scrollOffset,selectPos.w,25)) 
+            selectPos = self.font.size(self.split_values[endPos[1]][:endPos[0]])
+            pygame.draw.rect(screen.subsurface((self.x,self.y,self.w,self.h)),(200,200,255),pygame.Rect(0,25*endPos[1]+10+self.scrollOffset,selectPos[0],25))
         
         
 
         c=0
-        for text in self.texts:
+        for text in self.split_texts:
 
             screen.subsurface((self.x,self.y+10,self.w,self.h-10)).blit(text,(0,c+self.scrollOffset))
             #screen.blit(text,(self.x,self.y+10+c))
             c+=25
 
-        pygame.draw.rect(screen.subsurface(self.rect),(0,0,0),pygame.Rect(self.textbeforecursor.get_rect().w,self.scrollOffset+10+25*(self.cursorpos[1]),2,self.textbeforecursor.get_rect().h))
-
+        pygame.draw.rect(screen.subsurface(self.rect),(0,0,0),pygame.Rect(split_textbeforecursor.get_rect().w,self.scrollOffset+10+25*(split_cursorpos[1]),2,split_textbeforecursor.get_rect().h))
+    
     def onKeyDown(self, event) -> bool:
                 hasChanged = False
                 if self.focused:

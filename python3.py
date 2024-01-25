@@ -24,7 +24,7 @@ class Python3(window.Window):
 
         self.process = subprocess.Popen(["python3", self.file], cwd=self.directory,stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         self.stdout_list = [b""]
-        self.textInput.values = []
+        self.textInput.values = [""]
 
         threading.Thread(target=self.stdout_thread).start()
 
@@ -76,7 +76,7 @@ class Python3(window.Window):
         if self.textInput.focused:
             if event.key == pygame.K_RETURN:
                 self.onReturnPressed()
-            self.keyPressed(event)
+
             self.textInput.onKeyDown(event)
             return 1
         return 0
