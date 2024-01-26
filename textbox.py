@@ -47,6 +47,37 @@ class textInput:
         self.startpoint= [0,0]
         self.endpoint= [0,0]
 
+    def splitCoordsToNormal(self, cursorX, cursorY):
+        y = 0
+        buildup = ""
+        for i in range(cursorY):
+            buildup += self.split_values[i]
+            if len(buildup) >= len(self.values[y]):
+                buildup = ""
+                y += 1
+
+        x = len(buildup) + cursorX
+        return [x, y]
+    
+    def normalCoordsToSplit(self, normalX, normalY):
+        y = 0
+        splitY = 0
+        splitX = 0
+        buildup = ""
+        for i, value in enumerate(self.split_values):
+            buildup += value
+            if y == normalY:
+                if len(buildup) >= normalX:
+                    splitX = + normalX - len(buildup) + len(value) 
+                    splitY = i
+                    break
+        
+            elif len(buildup) >= len(self.values[y]):
+                buildup = ""
+                y += 1
+
+        return [splitX, splitY]
+    
     def getTextPosFromCoord(self, x : int, y: int) -> list[int, int]:
         cursorX = cursorY = 0
 
@@ -78,9 +109,9 @@ class textInput:
         buildup = ""
         for i in range(cursorY):
             buildup += self.split_values[i]
-        if len(buildup) >= len(self.values[y]):
-            buildup = ""
-            y += 1
+            if len(buildup) >= len(self.values[y]):
+                buildup = ""
+                y += 1
 
         x = len(buildup) + cursorX
         return [x, y]
@@ -160,6 +191,8 @@ class textInput:
 
     def onMouseEvents(self,event,mousePos):
         if event.type==pygame.MOUSEBUTTONDOWN:
+            if not functions.collidePygameRect(self.rect, mousePos):
+                return
             if event.button==1:
                 if functions.collidePygameRect(self.textbox,mousePos):
                     self.focused=True
@@ -266,12 +299,16 @@ class textInput:
                             self.pasteText(clipboard_content)
 
                         elif event.key == pygame.K_DOWN:
-                            if self.cursorpos[1] < len(self.values) - 1:
-                                self.cursorpos[1] += 1
+                            if self.normalCoordsToSplit(self.cursorpos[0],self.cursorpos[1])[1] < len(self.values) - 1:
+                                temp = self.normalCoordsToSplit(self.cursorpos[0],self.cursorpos[1])
+                                temp[1]+=1
+                                self.cursorpos=self.splitCoordsToNormal(temp[0],temp[1])
                                 redraw = True
                         elif event.key == pygame.K_UP:
-                            if self.cursorpos[1] > 0:
-                                self.cursorpos[1] -= 1
+                            if self.normalCoordsToSplit(self.cursorpos[0],self.cursorpos[1])[1] > 0:
+                                temp = self.normalCoordsToSplit(self.cursorpos[0],self.cursorpos[1])
+                                temp[1]-=1
+                                self.cursorpos=self.splitCoordsToNormal(temp[0],temp[1])
                                 redraw = True
                         elif event.key == pygame.K_RIGHT:
                             if self.cursorpos[0] < len(self.values[self.cursorpos[1]]):
