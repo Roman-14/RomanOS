@@ -222,9 +222,9 @@ class textInput:
         self.split_values = []
         self.split_texts = []
         split_textbeforecursor = self.textbeforecursor
-        split_cursorpos = self.cursorpos
-        split_startpos = self.startpoint
-        split_endpos = self.endpoint
+        split_cursorpos = self.cursorpos[:]
+        split_startpos = self.startpoint[:]
+        split_endpos = self.endpoint[:]
         for y, (line, text) in enumerate(zip(self.values, self.texts)):
             if text.get_rect().w > self.w:
                 last_index = 0
@@ -233,7 +233,7 @@ class textInput:
                     self.split_values += [line[last_index:i]]
                     self.split_texts += [self.font.render(line[last_index:i],True,self.textColour)]
 
-                    if self.cursorpos[1] == y and last_index <= self.cursorpos[0] < i:
+                    if self.cursorpos[1] == y and last_index <= self.cursorpos[0] <= i:
                         split_cursorpos = [self.cursorpos[0] - last_index, len(self.split_values)-1]
                         split_textbeforecursor = self.font.render(line[last_index:last_index + split_cursorpos[0]],True,self.textColour)
                     if self.startpoint[1] == y and last_index <= self.startpoint[0] < i:
@@ -246,6 +246,13 @@ class textInput:
             else:
                 self.split_values += [line]
                 self.split_texts += [text]
+
+                if self.cursorpos[1] == y:
+                    split_cursorpos[1] = len(self.split_values)-1
+                if self.startpoint[1] == y:
+                    split_startpos[1] = len(self.split_values)-1
+                if self.endpoint[1] == y:
+                    split_endpos[1] = len(self.split_values)-1
         
         if split_startpos[1]>split_endpos[1] or (split_startpos[1]==split_endpos[1] and split_startpos[0]>split_endpos[0]):
             startPos = split_endpos
