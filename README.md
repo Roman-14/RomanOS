@@ -1,5 +1,7 @@
 # RomanOS
 
+![An image of what RomanOS looks like](assets/example.png)
+
 ## What you can do on RomanOS:
 - Play audio files (and the audio from video files) on your hard drive (supports multiple file types)
 - Play video files on your hard drive
@@ -20,6 +22,13 @@
 ## What is RomanOS?
 
 RomanOS is a python desktop environment.
+
+## Installation
+
+Download the zip file of the code and then run:
+pip install -r requirements.txt
+
+Afterwards, just run wrapper.py!
 
 ## Extra stuff:
 ffmpeg is used to play audio for this program. Can be annoying to get on windows.
